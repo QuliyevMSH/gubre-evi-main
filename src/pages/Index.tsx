@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { ProductCard } from '@/components/ProductCard';
+import { Header } from '@/components/Header';
 
 const DEMO_PRODUCTS = [
   {
@@ -24,6 +25,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
+      <Header />
       <section className="relative h-screen">
         <video
           ref={videoRef}
