@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ProductCard } from '@/components/ProductCard';
-import { Header } from '@/components/Header';
+import Header from '@/components/Header'; // Changed to default import
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/types';
 import { useToast } from '@/components/ui/use-toast';

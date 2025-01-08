@@ -39,25 +39,6 @@ export default function Auth() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_UP' && session) {
-          // Create initial profile record after signup
-          const { error } = await supabase
-            .from('profiles')
-            .insert([
-              {
-                id: session.user.id,
-                first_name: '',
-                last_name: '',
-                email: session.user.email,
-                created_at: new Date().toISOString(),
-              }
-            ]);
-
-          if (error) {
-            console.error('Error creating profile:', error);
-          }
-        }
-        
         if (event === 'SIGNED_IN' && session) {
           navigate('/');
         }

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ShoppingCart, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/auth";
-import CartSheet from "./CartSheet";
+import { CartSheet } from "./CartSheet"; // Changed to named import
 
 export default function Header() {
   const { user } = useAuthStore();
