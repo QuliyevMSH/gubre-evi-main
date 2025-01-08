@@ -56,7 +56,13 @@ export const CartSheet = () => {
       const transformedData: BasketItem[] = (data || []).map(item => ({
         id: item.id,
         quantity: item.quantity,
-        products: item.products // Now products is a single object, not an array
+        products: {
+          id: item.products.id,
+          name: item.products.name,
+          price: item.products.price,
+          image: item.products.image,
+          category: item.products.category
+        }
       }));
 
       setBasketItems(transformedData);
