@@ -9,6 +9,7 @@ interface CartListProps {
       name: string;
       price: number;
       image: string;
+      category: string;
     };
   }>;
   onUpdateQuantity: (itemId: number, newQuantity: number) => Promise<void>;
