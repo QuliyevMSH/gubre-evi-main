@@ -53,7 +53,7 @@ const Index = () => {
           muted
           playsInline
         >
-          <source src="/video.mp4" type="video/mp4" />
+          <source src="https://youtu.be/85kTHwJ1Ju8" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-black/50" />
         <div className="relative flex h-full items-center justify-center text-center">
