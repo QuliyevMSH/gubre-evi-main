@@ -33,10 +33,12 @@ export default function Auth() {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
+    // Redirect to home if user is already logged in
     if (user) {
       navigate('/');
     }
 
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
@@ -49,7 +51,7 @@ export default function Auth() {
           }
         }
         if (event === 'SIGNED_OUT') {
-          setErrorMessage("");
+          setErrorMessage(""); // Clear errors on sign out
         }
       }
     );
