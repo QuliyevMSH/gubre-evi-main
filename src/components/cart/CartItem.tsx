@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils';
@@ -10,6 +11,7 @@ interface CartItemProps {
     name: string;
     price: number;
     image: string;
+    category: string;
   };
   onUpdateQuantity: (itemId: number, newQuantity: number) => Promise<void>;
   onRemove: (itemId: number) => Promise<void>;
@@ -35,7 +37,15 @@ export const CartItem = ({
       <div className="ml-4 flex flex-1 flex-col">
         <div>
           <div className="flex justify-between text-base font-medium">
-            <h3>{product.name}</h3>
+            <div className="flex flex-col">
+              <Link 
+                to={`/product/${product.id}`}
+                className="hover:text-primary transition-colors"
+              >
+                <h3>{product.name}</h3>
+              </Link>
+              <span className="text-sm text-muted-foreground">{product.category}</span>
+            </div>
             <p className="ml-4">{formatPrice(product.price * quantity)}</p>
           </div>
         </div>
@@ -45,7 +55,7 @@ export const CartItem = ({
               variant="outline"
               size="icon"
               className="h-8 w-8"
-              onClick={() => onUpdateQuantity(id, quantity - 1)}
+              onClick={async () => await onUpdateQuantity(id, quantity - 1)}
             >
               <Minus className="h-4 w-4" />
             </Button>
@@ -56,7 +66,7 @@ export const CartItem = ({
               variant="outline"
               size="icon"
               className="h-8 w-8"
-              onClick={() => onUpdateQuantity(id, quantity + 1)}
+              onClick={async () => await onUpdateQuantity(id, quantity + 1)}
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -65,7 +75,7 @@ export const CartItem = ({
             variant="ghost"
             size="icon"
             className="text-destructive"
-            onClick={() => onRemove(id)}
+            onClick={async () => await onRemove(id)}
           >
             <Trash2 className="h-4 w-4" />
           </Button>

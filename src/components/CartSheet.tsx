@@ -14,6 +14,7 @@ interface BasketItem {
     name: string;
     price: number;
     image: string;
+    category: string;
   };
 }
 
@@ -21,6 +22,8 @@ export const CartSheet = () => {
   const [basketItems, setBasketItems] = useState<BasketItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  const totalItems = basketItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const fetchBasketItems = async () => {
     try {
@@ -135,7 +138,7 @@ export const CartSheet = () => {
     return (
       <SheetContent className="flex w-full flex-col sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle>Səbət</SheetTitle>
+          <SheetTitle>Səbətim ({totalItems})</SheetTitle>
         </SheetHeader>
         <div className="flex-1 flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -147,7 +150,7 @@ export const CartSheet = () => {
   return (
     <SheetContent className="flex w-full flex-col sm:max-w-lg">
       <SheetHeader>
-        <SheetTitle>Səbət</SheetTitle>
+        <SheetTitle>Səbətim ({totalItems})</SheetTitle>
       </SheetHeader>
 
       <div className="flex-1 overflow-y-auto py-6">

@@ -54,7 +54,7 @@ export const Header = () => {
                 >
                   <ShoppingCart className="h-5 w-5" />
                   {cartItemsCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-white">
+                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
                       {cartItemsCount}
                     </span>
                   )}
