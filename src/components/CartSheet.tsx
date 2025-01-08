@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import { ShoppingCart } from 'lucide-react';
 import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { formatPrice } from '@/lib/utils';
@@ -50,7 +51,21 @@ export const CartSheet = () => {
         .eq('user_id', user.id);
 
       if (error) throw error;
-      setBasketItems(data || []);
+
+      // Transform the data to match BasketItem interface
+      const transformedData: BasketItem[] = (data || []).map(item => ({
+        id: item.id,
+        quantity: item.quantity,
+        products: {
+          id: item.products.id,
+          name: item.products.name,
+          price: item.products.price,
+          image: item.products.image,
+          category: item.products.category
+        }
+      }));
+
+      setBasketItems(transformedData);
     } catch (error) {
       console.error('Error fetching basket items:', error);
       toast({
@@ -118,7 +133,6 @@ export const CartSheet = () => {
 
       if (error) throw error;
 
-      // Update local state immediately for better UX
       setBasketItems(prev => prev.filter(item => item.id !== itemId));
     } catch (error) {
       console.error('Error removing item:', error);
@@ -135,42 +149,47 @@ export const CartSheet = () => {
     0
   );
 
-  if (loading) {
-    return (
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative">
+          <ShoppingCart className="h-5 w-5" />
+          {totalItems > 0 && (
+            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-primary text-xs text-primary-foreground flex items-center justify-center">
+              {totalItems}
+            </span>
+          )}
+        </Button>
+      </SheetTrigger>
       <SheetContent className="flex w-full flex-col sm:max-w-lg">
         <SheetHeader>
           <SheetTitle>Səbətim ({totalItems})</SheetTitle>
         </SheetHeader>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+
+        <div className="flex-1 overflow-y-auto py-6">
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <CartList
+              items={basketItems}
+              onUpdateQuantity={updateQuantity}
+              onRemove={removeItem}
+            />
+          )}
         </div>
-      </SheetContent>
-    );
-  }
 
-  return (
-    <SheetContent className="flex w-full flex-col sm:max-w-lg">
-      <SheetHeader>
-        <SheetTitle>Səbətim ({totalItems})</SheetTitle>
-      </SheetHeader>
-
-      <div className="flex-1 overflow-y-auto py-6">
-        <CartList
-          items={basketItems}
-          onUpdateQuantity={updateQuantity}
-          onRemove={removeItem}
-        />
-      </div>
-
-      {basketItems.length > 0 && (
-        <div className="border-t pt-6">
-          <div className="flex justify-between text-base font-medium">
-            <p>Cəmi</p>
-            <p>{formatPrice(total)}</p>
+        {basketItems.length > 0 && (
+          <div className="border-t pt-6">
+            <div className="flex justify-between text-base font-medium">
+              <p>Cəmi</p>
+              <p>{formatPrice(total)}</p>
+            </div>
+            <Button className="mt-6 w-full">Sifarişi tamamla</Button>
           </div>
-          <Button className="mt-6 w-full">Sifarişi tamamla</Button>
-        </div>
-      )}
-    </SheetContent>
+        )}
+      </SheetContent>
+    </Sheet>
   );
 };
