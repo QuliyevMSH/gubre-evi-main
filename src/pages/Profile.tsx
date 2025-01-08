@@ -25,7 +25,28 @@ export default function Profile() {
       return;
     }
     getProfile();
+    initStorage();
   }, [user, navigate]);
+
+  async function initStorage() {
+    try {
+      // Check if bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const avatarBucket = buckets?.find(bucket => bucket.name === 'avatars');
+      
+      // Create bucket if it doesn't exist
+      if (!avatarBucket) {
+        const { error: createError } = await supabase.storage.createBucket('avatars', {
+          public: true,
+          fileSizeLimit: 1024 * 1024 * 2, // 2MB
+        });
+        
+        if (createError) throw createError;
+      }
+    } catch (error) {
+      console.error('Error initializing storage:', error);
+    }
+  }
 
   async function getProfile() {
     try {
@@ -88,6 +109,16 @@ export default function Profile() {
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
       const filePath = `${user?.id}-${Math.random()}.${fileExt}`;
+
+      // Delete old avatar if exists
+      if (profile.avatar_url) {
+        const oldFilePath = profile.avatar_url.split('/').pop();
+        if (oldFilePath) {
+          await supabase.storage
+            .from('avatars')
+            .remove([oldFilePath]);
+        }
+      }
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
