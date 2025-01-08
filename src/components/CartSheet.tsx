@@ -50,21 +50,7 @@ export const CartSheet = () => {
         .eq('user_id', user.id);
 
       if (error) throw error;
-
-      // Transform the data to match BasketItem type
-      const transformedData: BasketItem[] = data?.map(item => ({
-        id: item.id,
-        quantity: item.quantity,
-        products: {
-          id: item.products.id,
-          name: item.products.name,
-          price: item.products.price,
-          image: item.products.image,
-          category: item.products.category
-        }
-      })) || [];
-
-      setBasketItems(transformedData);
+      setBasketItems(data || []);
     } catch (error) {
       console.error('Error fetching basket items:', error);
       toast({
@@ -132,6 +118,7 @@ export const CartSheet = () => {
 
       if (error) throw error;
 
+      // Update local state immediately for better UX
       setBasketItems(prev => prev.filter(item => item.id !== itemId));
     } catch (error) {
       console.error('Error removing item:', error);
@@ -142,6 +129,11 @@ export const CartSheet = () => {
       });
     }
   };
+
+  const total = basketItems.reduce(
+    (sum, item) => sum + (item.products?.price || 0) * item.quantity,
+    0
+  );
 
   if (loading) {
     return (
@@ -174,10 +166,7 @@ export const CartSheet = () => {
         <div className="border-t pt-6">
           <div className="flex justify-between text-base font-medium">
             <p>Cəmi</p>
-            <p>{formatPrice(basketItems.reduce(
-              (sum, item) => sum + item.products.price * item.quantity,
-              0
-            ))}</p>
+            <p>{formatPrice(total)}</p>
           </div>
           <Button className="mt-6 w-full">Sifarişi tamamla</Button>
         </div>
