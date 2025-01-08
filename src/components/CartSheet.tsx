@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Minus, Plus, Trash2 } from 'lucide-react';
 import { SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
-import { useCartStore } from '@/store/cart';
-import { formatPrice } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { formatPrice } from '@/lib/utils';
+import { CartList } from './cart/CartList';
 
 interface BasketItem {
   id: number;
@@ -63,7 +62,6 @@ export const CartSheet = () => {
   useEffect(() => {
     fetchBasketItems();
 
-    // Subscribe to changes in the basket table
     const channel = supabase
       .channel('basket_changes')
       .on(
@@ -86,7 +84,7 @@ export const CartSheet = () => {
 
   const updateQuantity = async (itemId: number, newQuantity: number) => {
     try {
-      if (newQuantity === 0) {
+      if (newQuantity <= 0) {
         await removeItem(itemId);
         return;
       }
@@ -115,6 +113,9 @@ export const CartSheet = () => {
         .eq('id', itemId);
 
       if (error) throw error;
+
+      // Update local state immediately for better UX
+      setBasketItems(prev => prev.filter(item => item.id !== itemId));
     } catch (error) {
       console.error('Error removing item:', error);
       toast({
@@ -150,63 +151,11 @@ export const CartSheet = () => {
       </SheetHeader>
 
       <div className="flex-1 overflow-y-auto py-6">
-        {basketItems.length === 0 ? (
-          <p className="text-center text-muted-foreground">Səbət boşdur</p>
-        ) : (
-          <ul className="divide-y">
-            {basketItems.map((item) => (
-              <li key={item.id} className="flex py-6">
-                <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border">
-                  <img
-                    src={item.products?.image}
-                    alt={item.products?.name}
-                    className="h-full w-full object-cover object-center"
-                  />
-                </div>
-
-                <div className="ml-4 flex flex-1 flex-col">
-                  <div>
-                    <div className="flex justify-between text-base font-medium">
-                      <h3>{item.products?.name}</h3>
-                      <p className="ml-4">{formatPrice(item.products?.price || 0)}</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-1 items-end justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <span className="min-w-[2rem] text-center">
-                        {item.quantity}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive"
-                      onClick={() => removeItem(item.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+        <CartList
+          items={basketItems}
+          onUpdateQuantity={updateQuantity}
+          onRemove={removeItem}
+        />
       </div>
 
       {basketItems.length > 0 && (

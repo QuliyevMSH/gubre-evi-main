@@ -71,9 +71,12 @@ const ProductDetail = () => {
       if (fetchError) throw fetchError;
 
       if (existingItem) {
+        const newQuantity = existingItem.quantity + quantity;
         const { error: updateError } = await supabase
           .from('basket')
-          .update({ quantity: existingItem.quantity + quantity })
+          .update({ 
+            quantity: newQuantity,
+          })
           .eq('id', existingItem.id);
 
         if (updateError) throw updateError;
