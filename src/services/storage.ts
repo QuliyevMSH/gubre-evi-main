@@ -3,41 +3,23 @@ import { toast } from "@/hooks/use-toast";
 
 export async function initAvatarStorage() {
   try {
-    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+    // First check if bucket exists
+    const { data: buckets } = await supabase.storage.listBuckets();
     
-    if (listError) {
-      console.error('Error listing buckets:', listError);
-      return false;
-    }
-
     const avatarBucket = buckets?.find(bucket => bucket.name === 'avatars');
+    
     if (!avatarBucket) {
+      // Create bucket with public access
       const { error: createError } = await supabase.storage.createBucket('avatars', {
         public: true,
         fileSizeLimit: 1024 * 1024 * 2, // 2MB
+        allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif']
       });
 
       if (createError) {
         console.error('Error creating bucket:', createError);
         return false;
       }
-    }
-
-    // Set public bucket policy
-    const { error: policyError } = await supabase.storage.from('avatars').createSignedUrl(
-      'dummy.txt',
-      60,
-      {
-        transform: {
-          width: 100,
-          height: 100,
-        },
-      }
-    );
-
-    if (policyError && !policyError.message.includes('Object not found')) {
-      console.error('Error setting bucket policy:', policyError);
-      return false;
     }
 
     return true;
@@ -64,7 +46,10 @@ export async function uploadAvatar(userId: string, file: File, oldAvatarUrl?: st
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
 
     if (uploadError) throw uploadError;
 
