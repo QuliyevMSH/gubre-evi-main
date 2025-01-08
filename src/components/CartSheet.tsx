@@ -43,7 +43,8 @@ export const CartSheet = () => {
             id,
             name,
             price,
-            image
+            image,
+            category
           )
         `)
         .eq('user_id', user.id);
