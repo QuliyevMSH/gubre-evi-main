@@ -3,13 +3,11 @@ import { toast } from "@/hooks/use-toast";
 
 export async function initAvatarStorage() {
   try {
-    // First check if bucket exists
     const { data: buckets } = await supabase.storage.listBuckets();
     
     const avatarBucket = buckets?.find(bucket => bucket.name === 'avatars');
     
     if (!avatarBucket) {
-      // Create bucket with public access
       const { error: createError } = await supabase.storage.createBucket('avatars', {
         public: true,
         fileSizeLimit: 1024 * 1024 * 2, // 2MB
@@ -18,6 +16,18 @@ export async function initAvatarStorage() {
 
       if (createError) {
         console.error('Error creating bucket:', createError);
+        return false;
+      }
+
+      // Create a policy that allows authenticated users to upload
+      const { error: policyError } = await supabase.rpc('create_storage_policy', {
+        bucket_name: 'avatars',
+        policy_name: 'authenticated_upload',
+        definition: 'auth.role() = \'authenticated\''
+      });
+
+      if (policyError) {
+        console.error('Error creating policy:', policyError);
         return false;
       }
     }

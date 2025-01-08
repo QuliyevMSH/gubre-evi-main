@@ -50,7 +50,21 @@ export const CartSheet = () => {
         .eq('user_id', user.id);
 
       if (error) throw error;
-      setBasketItems(data || []);
+
+      // Transform the data to match BasketItem type
+      const transformedData: BasketItem[] = data?.map(item => ({
+        id: item.id,
+        quantity: item.quantity,
+        products: {
+          id: item.products.id,
+          name: item.products.name,
+          price: item.products.price,
+          image: item.products.image,
+          category: item.products.category
+        }
+      })) || [];
+
+      setBasketItems(transformedData);
     } catch (error) {
       console.error('Error fetching basket items:', error);
       toast({
@@ -166,7 +180,10 @@ export const CartSheet = () => {
         <div className="border-t pt-6">
           <div className="flex justify-between text-base font-medium">
             <p>Cəmi</p>
-            <p>{formatPrice(total)}</p>
+            <p>{formatPrice(basketItems.reduce(
+              (sum, item) => sum + item.products.price * item.quantity,
+              0
+            ))}</p>
           </div>
           <Button className="mt-6 w-full">Sifarişi tamamla</Button>
         </div>
