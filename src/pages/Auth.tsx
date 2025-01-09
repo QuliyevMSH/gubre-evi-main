@@ -10,6 +10,8 @@ import { useAuthStore } from '@/store/auth';
 const getErrorMessage = (error: AuthError) => {
   if (error instanceof AuthApiError) {
     switch (error.code) {
+      case 'user_already_exists':
+        return 'Bu email artıq qeydiyyatdan keçib. Zəhmət olmasa daxil olun və ya başqa email istifadə edin.';
       case 'email_address_invalid':
         return 'Düzgün email ünvanı daxil edin.';
       case 'invalid_credentials':
