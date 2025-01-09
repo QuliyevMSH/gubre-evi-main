@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { useAuthStore } from "@/store/auth";
 import { supabase } from "@/integrations/supabase/client";
 import Index from "@/pages/Index";
@@ -32,7 +32,7 @@ function App() {
   }, [setUser, setLoading]);
 
   return (
-    <Router>
+    <>
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
@@ -48,7 +48,7 @@ function App() {
         />
       </Routes>
       <Toaster />
-    </Router>
+    </>
   );
 }
 
