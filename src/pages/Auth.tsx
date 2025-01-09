@@ -33,31 +33,14 @@ export default function Auth() {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
+    // Redirect to home if user is already logged in
     if (user) {
       navigate('/');
     }
 
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_UP' && session) {
-          // Create initial profile record after signup
-          const { error } = await supabase
-            .from('profiles')
-            .insert([
-              {
-                id: session.user.id,
-                first_name: '',
-                last_name: '',
-                email: session.user.email,
-                created_at: new Date().toISOString(),
-              }
-            ]);
-
-          if (error) {
-            console.error('Error creating profile:', error);
-          }
-        }
-        
         if (event === 'SIGNED_IN' && session) {
           navigate('/');
         }
@@ -68,7 +51,7 @@ export default function Auth() {
           }
         }
         if (event === 'SIGNED_OUT') {
-          setErrorMessage("");
+          setErrorMessage(""); // Clear errors on sign out
         }
       }
     );
