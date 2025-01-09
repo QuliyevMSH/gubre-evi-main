@@ -1,125 +1,49 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Menu, ShoppingCart, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useCartStore } from '@/store/cart';
-import { useAuthStore } from '@/store/auth';
-import { CartSheet } from './CartSheet';
+import { Link } from "react-router-dom";
+import { ShoppingCart, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/auth";
+import CartSheet from "./CartSheet";
 
-export const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const cartItems = useCartStore((state) => state.items);
-  const { user, signOut } = useAuthStore();
-  const navigate = useNavigate();
-
-  const cartItemsCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/auth');
-  };
+export default function Header() {
+  const { user } = useAuthStore();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass-morphism">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-primary">
-            GübrəEvi
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 hidden md:flex">
+          <Link to="/" className="mr-6 flex items-center space-x-2">
+            <span className="hidden font-bold sm:inline-block">
+              Gübrə Evi
+            </span>
           </Link>
+        </div>
 
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="nav-link">
-              Ana Səhifə
-            </Link>
-            <Link to="/products" className="nav-link">
-              Məhsullar
-            </Link>
-            <Link to="/about" className="nav-link">
-              Haqqımızda
-            </Link>
-            <Link to="/contact" className="nav-link">
-              Əlaqə
-            </Link>
-          </nav>
-
-          <div className="flex items-center space-x-4">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative"
-                  aria-label="Open cart"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  {cartItemsCount > 0 && (
-                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                      {cartItemsCount}
-                    </span>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <CartSheet />
-            </Sheet>
-
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          <div className="w-full flex-1 md:w-auto md:flex-none">
+            <input
+              type="text"
+              placeholder="Axtar..."
+              className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            />
+          </div>
+          <nav className="flex items-center space-x-2">
             {user ? (
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
-                </Button>
-                <Button variant="default" onClick={handleSignOut}>
-                  Çıxış
-                </Button>
-              </div>
+              <>
+                <Link to="/profile">
+                  <Button variant="ghost" size="icon" className="relative">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <CartSheet />
+              </>
             ) : (
               <Link to="/auth">
-                <Button variant="default">Giriş / Qeydiyyat</Button>
+                <Button variant="ghost">Giriş</Button>
               </Link>
             )}
-
-            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-              <SheetTrigger asChild className="md:hidden">
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <nav className="flex flex-col space-y-4">
-                  <Link
-                    to="/"
-                    className="nav-link"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Ana Səhifə
-                  </Link>
-                  <Link
-                    to="/products"
-                    className="nav-link"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Məhsullar
-                  </Link>
-                  <Link
-                    to="/about"
-                    className="nav-link"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Haqqımızda
-                  </Link>
-                  <Link
-                    to="/contact"
-                    className="nav-link"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Əlaqə
-                  </Link>
-                </nav>
-              </SheetContent>
-            </Sheet>
-          </div>
+          </nav>
         </div>
       </div>
     </header>
   );
-};
+}
