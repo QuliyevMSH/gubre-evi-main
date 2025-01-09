@@ -1,85 +1,52 @@
-import { useEffect, useRef, useState } from 'react';
-import { ProductCard } from '@/components/ProductCard';
-import { Header } from '@/components/Header';
-import { supabase } from '@/integrations/supabase/client';
-import { Product } from '@/types';
-import { useToast } from '@/components/ui/use-toast';
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { ProductCard } from "@/components/ProductCard";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Product } from "@/types";
 
-const Index = () => {
-  const videoRef = useRef<HTMLVideoElement>(null);
+export default function Index() {
   const [products, setProducts] = useState<Product[]>([]);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play();
-    }
-  }, []);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const { data, error } = await supabase
-          .from('products')
-          .select('id, name, price, description, image, category');
-
-        if (error) {
-          throw error;
-        }
-
+          .from("products")
+          .select("*");
+        
+        if (error) throw error;
+        
         setProducts(data || []);
       } catch (error) {
-        console.error('Error fetching products:', error);
-        toast({
-          variant: "destructive",
-          title: "Xəta baş verdi",
-          description: "Məhsulları yükləyərkən xəta baş verdi",
-        });
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchProducts();
-  }, [toast]);
+  }, []);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Header />
-      <section className="relative h-screen">
-        <video
-          ref={videoRef}
-          className="absolute inset-0 h-full w-full object-cover"
-          autoPlay
-          loop
-          muted
-          playsInline
-        >
-          <source src="/video.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative flex h-full items-center justify-center text-center">
-          <div className="container px-4">
-            <h1 className="text-4xl font-bold text-white sm:text-6xl">
-              GübrəEvi
-            </h1>
-            <p className="mt-4 text-lg text-white/90 sm:text-xl">
-              Keyfiyyətli gübrələr, sağlam məhsullar
-            </p>
+      <main className="flex-grow container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold text-center mb-8">Məhsullarımız</h1>
+        {loading ? (
+          <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
           </div>
-        </div>
-      </section>
-
-      <section className="py-16">
-        <div className="container px-4">
-          <h2 className="text-center text-3xl font-bold">Məhsullarımız</h2>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
-        </div>
-      </section>
+        )}
+      </main>
+      <Footer />
     </div>
   );
-};
-
-export default Index;
+}

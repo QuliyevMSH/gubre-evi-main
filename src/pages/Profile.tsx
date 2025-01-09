@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { Tables } from '@/integrations/supabase/types';
+
+type Profile = Pick<Tables<'profiles'>, 'first_name' | 'last_name' | 'avatar_url'>;
 
 export default function Profile() {
   const { user } = useAuthStore();
@@ -13,51 +16,96 @@ export default function Profile() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [profile, setProfile] = useState({
+  const [profile, setProfile] = useState<Profile>({
     first_name: '',
     last_name: '',
-    avatar_url: '',
+    avatar_url: null,
   });
 
   useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    getProfile();
-  }, [user, navigate]);
+    let mounted = true;
 
-  async function getProfile() {
+    const initializeSession = async () => {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) throw sessionError;
+        
+        if (!session) {
+          navigate('/auth');
+          return;
+        }
+
+        if (mounted) {
+          await getProfile(session.user.id);
+        }
+      } catch (error) {
+        console.error('Session error:', error);
+        toast({
+          variant: "destructive",
+          title: "Xəta baş verdi",
+          description: "Sessiya yoxlanılmadı",
+        });
+        navigate('/auth');
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    initializeSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        navigate('/auth');
+      } else if (session && mounted) {
+        await getProfile(session.user.id);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
+
+  async function getProfile(userId: string) {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('id', user?.id)
+        .select('first_name, last_name, avatar_url')
+        .eq('id', userId)
         .single();
 
       if (error) throw error;
+      
       if (data) {
         setProfile({
           first_name: data.first_name || '',
           last_name: data.last_name || '',
-          avatar_url: data.avatar_url || '',
+          avatar_url: data.avatar_url,
         });
       }
     } catch (error) {
+      console.error('Error fetching profile:', error);
       toast({
         variant: "destructive",
         title: "Xəta baş verdi",
         description: "Profil məlumatları yüklənmədi",
       });
-    } finally {
-      setLoading(false);
     }
   }
 
   async function updateProfile() {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
     try {
       const { error } = await supabase.from('profiles').upsert({
-        id: user?.id,
+        id: user.id,
         first_name: profile.first_name,
         last_name: profile.last_name,
         avatar_url: profile.avatar_url,
@@ -65,11 +113,13 @@ export default function Profile() {
       });
 
       if (error) throw error;
+      
       toast({
         title: "Uğurlu!",
         description: "Profil məlumatları yeniləndi",
       });
     } catch (error) {
+      console.error('Error updating profile:', error);
       toast({
         variant: "destructive",
         title: "Xəta baş verdi",
@@ -81,13 +131,19 @@ export default function Profile() {
   async function uploadAvatar(event: React.ChangeEvent<HTMLInputElement>) {
     try {
       setUploading(true);
+      
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('Şəkil seçilmədi');
       }
 
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
+
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
-      const filePath = `${user?.id}-${Math.random()}.${fileExt}`;
+      const filePath = `${user.id}-${Math.random()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
@@ -107,6 +163,7 @@ export default function Profile() {
         description: "Profil şəkli yükləndi",
       });
     } catch (error) {
+      console.error('Error uploading avatar:', error);
       toast({
         variant: "destructive",
         title: "Xəta baş verdi",
@@ -118,7 +175,11 @@ export default function Profile() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Yüklənir...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return (

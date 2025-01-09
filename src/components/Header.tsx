@@ -1,47 +1,137 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, ShoppingCart, User } from 'lucide-react';
+import { Menu, ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetTrigger } from '@/components/ui/sheet';
 import { useCartStore } from '@/store/cart';
 import { useAuthStore } from '@/store/auth';
 import { CartSheet } from './CartSheet';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+import { MainNav } from './navigation/MainNav';
+import { MobileNav } from './navigation/MobileNav';
+import { UserMenu } from './navigation/UserMenu';
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const cartItems = useCartStore((state) => state.items);
   const { user, signOut } = useAuthStore();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const cartItemsCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
+  useEffect(() => {
+    let mounted = true;
+
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) throw sessionError;
+        
+        if (!session?.user) {
+          if (mounted) {
+            setIsAdmin(false);
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+
+        if (error) throw error;
+        
+        if (mounted) {
+          setIsAdmin(data?.role === 'admin');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to check admin status",
+        });
+        if (mounted) {
+          setIsAdmin(false);
+          setIsLoading(false);
+        }
+      }
+    };
+
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        if (mounted) {
+          setIsAdmin(false);
+        }
+      } else if (session?.user && mounted) {
+        checkSession();
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [toast]);
+
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/auth');
+    try {
+      await signOut();
+      navigate('/auth');
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account",
+      });
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to sign out",
+      });
+    }
   };
+
+  const renderLogo = () => (
+    <Link to="/" className="flex items-center space-x-2">
+      <img 
+        src="/lovable-uploads/0e1e6550-b588-485a-bf15-83042085c242.png" 
+        alt="GübrəEvi Logo" 
+        className="h-8 w-8"
+      />
+      <span className="text-2xl font-bold text-primary">GübrəEvi</span>
+    </Link>
+  );
+
+  if (isLoading) {
+    return (
+      <header className="fixed top-0 left-0 right-0 z-50 glass-morphism">
+        <div className="container mx-auto px-4">
+          <div className="flex h-16 items-center justify-between">
+            {renderLogo()}
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass-morphism">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-primary">
-            GübrəEvi
-          </Link>
-
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="nav-link">
-              Ana Səhifə
-            </Link>
-            <Link to="/products" className="nav-link">
-              Məhsullar
-            </Link>
-            <Link to="/about" className="nav-link">
-              Haqqımızda
-            </Link>
-            <Link to="/contact" className="nav-link">
-              Əlaqə
-            </Link>
-          </nav>
+          {renderLogo()}
+          
+          <MainNav isAdmin={isAdmin} />
 
           <div className="flex items-center space-x-4">
             <Sheet>
@@ -63,20 +153,7 @@ export const Header = () => {
               <CartSheet />
             </Sheet>
 
-            {user ? (
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" onClick={() => navigate('/profile')}>
-                  <User className="h-5 w-5" />
-                </Button>
-                <Button variant="default" onClick={handleSignOut}>
-                  Çıxış
-                </Button>
-              </div>
-            ) : (
-              <Link to="/auth">
-                <Button variant="default">Giriş / Qeydiyyat</Button>
-              </Link>
-            )}
+            <UserMenu user={user} onSignOut={handleSignOut} />
 
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild className="md:hidden">
@@ -84,38 +161,11 @@ export const Header = () => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <nav className="flex flex-col space-y-4">
-                  <Link
-                    to="/"
-                    className="nav-link"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Ana Səhifə
-                  </Link>
-                  <Link
-                    to="/products"
-                    className="nav-link"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Məhsullar
-                  </Link>
-                  <Link
-                    to="/about"
-                    className="nav-link"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Haqqımızda
-                  </Link>
-                  <Link
-                    to="/contact"
-                    className="nav-link"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Əlaqə
-                  </Link>
-                </nav>
-              </SheetContent>
+              <MobileNav 
+                isOpen={isMenuOpen} 
+                onOpenChange={setIsMenuOpen}
+                isAdmin={isAdmin}
+              />
             </Sheet>
           </div>
         </div>

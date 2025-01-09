@@ -31,6 +31,7 @@ export const CartSheet = () => {
       
       if (!user) {
         setBasketItems([]);
+        setLoading(false);
         return;
       }
 
@@ -47,7 +48,8 @@ export const CartSheet = () => {
             category
           )
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setBasketItems(data || []);
@@ -118,7 +120,6 @@ export const CartSheet = () => {
 
       if (error) throw error;
 
-      // Update local state immediately for better UX
       setBasketItems(prev => prev.filter(item => item.id !== itemId));
     } catch (error) {
       console.error('Error removing item:', error);
