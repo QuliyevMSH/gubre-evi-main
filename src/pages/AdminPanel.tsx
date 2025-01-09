@@ -126,9 +126,21 @@ export default function AdminPanel() {
 
   const handleDeleteProduct = async (id: number) => {
     try {
-      const { error } = await supabase.from("products").delete().eq("id", id);
+      // First, delete all basket items referencing this product
+      const { error: basketError } = await supabase
+        .from('basket')
+        .delete()
+        .eq('product_id', id);
 
-      if (error) throw error;
+      if (basketError) throw basketError;
+
+      // Then delete the product itself
+      const { error: productError } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (productError) throw productError;
 
       toast({
         title: "Uğurlu",
