@@ -28,11 +28,6 @@ interface Profile {
   email?: string;
 }
 
-interface AuthUser {
-  id: string;
-  email?: string;
-}
-
 export const UserManagement = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
@@ -50,17 +45,7 @@ export const UserManagement = () => {
 
       if (profilesError) throw profilesError;
 
-      // Fetch emails from auth.users
-      const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
-
-      if (authError) throw authError;
-
-      const profilesWithEmail = (profilesData || []).map((profile: Profile) => ({
-        ...profile,
-        email: (authData?.users || []).find((user: AuthUser) => user.id === profile.id)?.email,
-      }));
-
-      setProfiles(profilesWithEmail);
+      setProfiles(profilesData || []);
     } catch (error) {
       console.error("Error fetching profiles:", error);
       toast({
@@ -140,7 +125,6 @@ export const UserManagement = () => {
               <h3 className="font-semibold">
                 {profile.first_name} {profile.last_name}
               </h3>
-              <p className="text-sm text-gray-600">{profile.email}</p>
               <span className="inline-block px-2 py-1 text-xs rounded-full bg-primary/10 text-primary">
                 {profile.role}
               </span>
