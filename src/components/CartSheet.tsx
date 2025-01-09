@@ -52,8 +52,7 @@ export const CartSheet = () => {
 
       if (error) throw error;
 
-      // Transform the data to match BasketItem interface
-      const transformedData: BasketItem[] = (data || []).map(item => ({
+      const transformedData: BasketItem[] = data?.map(item => ({
         id: item.id,
         quantity: item.quantity,
         products: {
@@ -63,7 +62,7 @@ export const CartSheet = () => {
           image: item.products.image,
           category: item.products.category
         }
-      }));
+      })) || [];
 
       setBasketItems(transformedData);
     } catch (error) {
