@@ -31,6 +31,7 @@ export const CartSheet = () => {
       
       if (!user) {
         setBasketItems([]);
+        setLoading(false);
         return;
       }
 
@@ -50,7 +51,21 @@ export const CartSheet = () => {
         .eq('user_id', user.id);
 
       if (error) throw error;
-      setBasketItems(data || []);
+
+      // Transform data to match BasketItem interface
+      const transformedData: BasketItem[] = (data || []).map(item => ({
+        id: item.id,
+        quantity: item.quantity,
+        products: {
+          id: item.products.id,
+          name: item.products.name,
+          price: item.products.price,
+          image: item.products.image,
+          category: item.products.category
+        }
+      }));
+
+      setBasketItems(transformedData);
     } catch (error) {
       console.error('Error fetching basket items:', error);
       toast({
@@ -118,7 +133,6 @@ export const CartSheet = () => {
 
       if (error) throw error;
 
-      // Update local state immediately for better UX
       setBasketItems(prev => prev.filter(item => item.id !== itemId));
     } catch (error) {
       console.error('Error removing item:', error);
@@ -131,7 +145,7 @@ export const CartSheet = () => {
   };
 
   const total = basketItems.reduce(
-    (sum, item) => sum + (item.products?.price || 0) * item.quantity,
+    (sum, item) => sum + item.products.price * item.quantity,
     0
   );
 
