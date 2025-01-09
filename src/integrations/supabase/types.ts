@@ -6,16 +6,6 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Profile {
-  created_at: string;
-  feedback: string | null;
-  first_name: string | null;
-  id: string;
-  last_name: string | null;
-  role: "admin" | "user";
-  avatar_url?: string;
-}
-
 export type Database = {
   public: {
     Tables: {
@@ -94,10 +84,34 @@ export type Database = {
         Relationships: []
       }
       profiles: {
-        Row: Profile;
-        Insert: Partial<Profile>;
-        Update: Partial<Profile>;
-        Relationships: [];
+        Row: {
+          created_at: string
+          feedback: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          avatar_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          feedback?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          avatar_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          feedback?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          avatar_url?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -124,7 +138,7 @@ export type Tables<
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never,
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
