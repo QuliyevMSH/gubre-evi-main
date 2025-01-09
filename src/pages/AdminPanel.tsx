@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,10 @@ export default function AdminPanel() {
     image: "",
     category: "",
   });
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const fetchProducts = async () => {
     try {
@@ -222,130 +226,41 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              {/* Edit Product Form */}
-              {editingProduct && (
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h2 className="text-xl font-semibold mb-4">
-                    Məhsulu Redaktə Et
-                  </h2>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="edit-name">Ad</Label>
-                      <Input
-                        id="edit-name"
-                        value={editingProduct.name}
-                        onChange={(e) =>
-                          setEditingProduct({
-                            ...editingProduct,
-                            name: e.target.value,
-                          })
-                        }
+              {/* Products List */}
+              <div className="mt-8">
+                <h2 className="text-xl font-semibold mb-4">Mövcud Məhsullar</h2>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {products.map((product) => (
+                    <div
+                      key={product.id}
+                      className="bg-white p-4 rounded-lg shadow-md"
+                    >
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-48 object-cover rounded-md mb-4"
                       />
+                      <h3 className="font-semibold">{product.name}</h3>
+                      <p className="text-gray-600">{product.price} AZN</p>
+                      <div className="mt-4 flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setEditingProduct(product)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => handleDeleteProduct(product.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="edit-price">Qiymət</Label>
-                      <Input
-                        id="edit-price"
-                        type="number"
-                        value={editingProduct.price}
-                        onChange={(e) =>
-                          setEditingProduct({
-                            ...editingProduct,
-                            price: parseFloat(e.target.value),
-                          })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-description">Təsvir</Label>
-                      <Textarea
-                        id="edit-description"
-                        value={editingProduct.description}
-                        onChange={(e) =>
-                          setEditingProduct({
-                            ...editingProduct,
-                            description: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-image">Şəkil URL</Label>
-                      <Input
-                        id="edit-image"
-                        value={editingProduct.image}
-                        onChange={(e) =>
-                          setEditingProduct({
-                            ...editingProduct,
-                            image: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-category">Kateqoriya</Label>
-                      <Input
-                        id="edit-category"
-                        value={editingProduct.category}
-                        onChange={(e) =>
-                          setEditingProduct({
-                            ...editingProduct,
-                            category: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button onClick={handleUpdateProduct} className="flex-1">
-                        Yadda Saxla
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setEditingProduct(null)}
-                        className="flex-1"
-                      >
-                        Ləğv Et
-                      </Button>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              )}
-            </div>
-
-            {/* Products List */}
-            <div className="mt-8">
-              <h2 className="text-xl font-semibold mb-4">Mövcud Məhsullar</h2>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {products.map((product) => (
-                  <div
-                    key={product.id}
-                    className="bg-white p-4 rounded-lg shadow-md"
-                  >
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-48 object-cover rounded-md mb-4"
-                    />
-                    <h3 className="font-semibold">{product.name}</h3>
-                    <p className="text-gray-600">{product.price} AZN</p>
-                    <div className="mt-4 flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setEditingProduct(product)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        onClick={() => handleDeleteProduct(product.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
           </TabsContent>

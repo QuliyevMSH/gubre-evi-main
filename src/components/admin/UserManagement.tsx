@@ -25,7 +25,6 @@ interface Profile {
   first_name: string | null;
   last_name: string | null;
   role: "admin" | "user";
-  email?: string;
 }
 
 export const UserManagement = () => {
