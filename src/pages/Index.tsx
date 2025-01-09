@@ -1,52 +1,85 @@
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { ProductCard } from "@/components/ProductCard";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Product } from "@/types";
+import { useEffect, useRef, useState } from 'react';
+import { ProductCard } from '@/components/ProductCard';
+import Header from '@/components/Header'; // Changed to default import
+import { supabase } from '@/integrations/supabase/client';
+import { Product } from '@/types';
+import { useToast } from '@/components/ui/use-toast';
 
-export default function Index() {
+const Index = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play();
+    }
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const { data, error } = await supabase
-          .from("products")
-          .select("*");
-        
-        if (error) throw error;
-        
+          .from('products')
+          .select('id, name, price, description, image, category');
+
+        if (error) {
+          throw error;
+        }
+
         setProducts(data || []);
       } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching products:', error);
+        toast({
+          variant: "destructive",
+          title: "Xəta baş verdi",
+          description: "Məhsulları yükləyərkən xəta baş verdi",
+        });
       }
     };
 
     fetchProducts();
-  }, []);
+  }, [toast]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen">
       <Header />
-      <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-8">Məhsullarımız</h1>
-        {loading ? (
-          <div className="flex justify-center items-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <section className="relative h-screen">
+        <video
+          ref={videoRef}
+          className="absolute inset-0 h-full w-full object-cover"
+          autoPlay
+          loop
+          muted
+          playsInline
+        >
+          <source src="/video.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="relative flex h-full items-center justify-center text-center">
+          <div className="container px-4">
+            <h1 className="text-4xl font-bold text-white sm:text-6xl">
+              GübrəEvi
+            </h1>
+            <p className="mt-4 text-lg text-white/90 sm:text-xl">
+              Keyfiyyətli gübrələr, sağlam məhsullar
+            </p>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        </div>
+      </section>
+
+      <section className="py-16">
+        <div className="container px-4">
+          <h2 className="text-center text-3xl font-bold">Məhsullarımız</h2>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
-        )}
-      </main>
-      <Footer />
+        </div>
+      </section>
     </div>
   );
-}
+};
+
+export default Index;

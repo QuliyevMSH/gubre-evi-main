@@ -1,257 +1,203 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/store/auth';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/components/ui/use-toast';
-import { Tables } from '@/integrations/supabase/types';
-
-type Profile = Pick<Tables<'profiles'>, 'first_name' | 'last_name' | 'avatar_url'>;
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/store/auth";
+import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 
 export default function Profile() {
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [profile, setProfile] = useState<Profile>({
-    first_name: '',
-    last_name: '',
-    avatar_url: null,
+  
+  const [loading, setLoading] = useState(false);
+  const [profile, setProfile] = useState({
+    first_name: "",
+    last_name: "",
+    avatar_url: "",
   });
 
   useEffect(() => {
-    let mounted = true;
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    
+    fetchProfile();
+  }, [user, navigate]);
 
-    const initializeSession = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) throw sessionError;
-        
-        if (!session) {
-          navigate('/auth');
-          return;
-        }
-
-        if (mounted) {
-          await getProfile(session.user.id);
-        }
-      } catch (error) {
-        console.error('Session error:', error);
-        toast({
-          variant: "destructive",
-          title: "Xəta baş verdi",
-          description: "Sessiya yoxlanılmadı",
-        });
-        navigate('/auth');
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    initializeSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        navigate('/auth');
-      } else if (session && mounted) {
-        await getProfile(session.user.id);
-      }
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [navigate, toast]);
-
-  async function getProfile(userId: string) {
+  const fetchProfile = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('first_name, last_name, avatar_url')
-        .eq('id', userId)
+        .from("profiles")
+        .select("*")
+        .eq("id", user?.id)
         .single();
 
       if (error) throw error;
-      
       if (data) {
         setProfile({
-          first_name: data.first_name || '',
-          last_name: data.last_name || '',
-          avatar_url: data.avatar_url,
+          first_name: data.first_name || "",
+          last_name: data.last_name || "",
+          avatar_url: data.avatar_url || "",
         });
       }
     } catch (error) {
-      console.error('Error fetching profile:', error);
-      toast({
-        variant: "destructive",
-        title: "Xəta baş verdi",
-        description: "Profil məlumatları yüklənmədi",
-      });
+      console.error("Error fetching profile:", error);
     }
-  }
+  };
 
-  async function updateProfile() {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
 
+    setLoading(true);
     try {
-      const { error } = await supabase.from('profiles').upsert({
-        id: user.id,
-        first_name: profile.first_name,
-        last_name: profile.last_name,
-        avatar_url: profile.avatar_url,
-        updated_at: new Date().toISOString(),
-      });
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
 
       if (error) throw error;
-      
+
       toast({
-        title: "Uğurlu!",
-        description: "Profil məlumatları yeniləndi",
+        title: "Profil yeniləndi",
+        description: "Məlumatlarınız uğurla yeniləndi.",
       });
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
       toast({
         variant: "destructive",
         title: "Xəta baş verdi",
-        description: "Profil məlumatları yenilənmədi",
+        description: "Məlumatlar yenilənərkən xəta baş verdi. Yenidən cəhd edin.",
       });
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  async function uploadAvatar(event: React.ChangeEvent<HTMLInputElement>) {
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
-      setUploading(true);
+      if (!event.target.files || !event.target.files[0]) return;
       
-      if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('Şəkil seçilmədi');
-      }
-
-      if (!user) {
-        navigate('/auth');
-        return;
-      }
-
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}-${Math.random()}.${fileExt}`;
+      const filePath = `${user?.id}/avatar.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file);
+        .upload(filePath, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      
-      setProfile({
-        ...profile,
-        avatar_url: data.publicUrl,
-      });
-      
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user?.id);
+
+      if (updateError) throw updateError;
+
+      setProfile(prev => ({ ...prev, avatar_url: publicUrl }));
       toast({
-        title: "Uğurlu!",
-        description: "Profil şəkli yükləndi",
+        title: "Profil şəkli yeniləndi",
+        description: "Profil şəkliniz uğurla yeniləndi.",
       });
     } catch (error) {
-      console.error('Error uploading avatar:', error);
+      console.error("Error uploading avatar:", error);
       toast({
         variant: "destructive",
         title: "Xəta baş verdi",
-        description: "Profil şəkli yüklənmədi",
+        description: "Profil şəkli yüklənərkən xəta baş verdi. Yenidən cəhd edin.",
       });
-    } finally {
-      setUploading(false);
     }
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  };
 
   return (
-    <div className="min-h-screen pt-20 px-4">
-      <div className="max-w-xl mx-auto bg-white rounded-lg shadow p-8">
-        <div className="flex flex-col items-center mb-8">
-          <div className="relative w-32 h-32 mb-4">
-            <img
-              src={profile.avatar_url || '/placeholder.svg'}
-              alt="Profile"
-              className="w-full h-full rounded-full object-cover"
+    <div className="min-h-screen bg-background py-8 px-4">
+      <div className="max-w-md mx-auto bg-white rounded-lg shadow p-6">
+        <div className="flex flex-col items-center mb-6">
+          <div className="relative">
+            <Avatar className="w-24 h-24">
+              <AvatarImage src={profile.avatar_url} />
+              <AvatarFallback>
+                {profile.first_name?.[0]}
+                {profile.last_name?.[0]}
+              </AvatarFallback>
+            </Avatar>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              aria-label="Profil şəkli yüklə"
             />
-            <label
-              htmlFor="avatar"
-              className="absolute bottom-0 right-0 bg-primary text-white p-2 rounded-full cursor-pointer hover:bg-primary/90"
-            >
-              <input
-                type="file"
-                id="avatar"
-                className="hidden"
-                accept="image/*"
-                onChange={uploadAvatar}
-                disabled={uploading}
-              />
-              {uploading ? '...' : '✏️'}
-            </label>
           </div>
-          <h2 className="text-2xl font-semibold">
+          <h2 className="mt-4 text-xl font-semibold">
             {profile.first_name} {profile.last_name}
           </h2>
           <p className="text-muted-foreground">{user?.email}</p>
         </div>
 
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="firstName">Ad</Label>
-              <Input
-                id="firstName"
-                type="text"
-                value={profile.first_name}
-                onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="lastName">Soyad</Label>
-              <Input
-                id="lastName"
-                type="text"
-                value={profile.last_name}
-                onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="first_name" className="block text-sm font-medium mb-1">
+              Ad
+            </label>
             <Input
-              id="email"
-              type="email"
-              value={user?.email || ''}
-              disabled
+              id="first_name"
+              value={profile.first_name}
+              onChange={(e) => setProfile(prev => ({ ...prev, first_name: e.target.value }))}
+              placeholder="Adınız"
             />
           </div>
 
-          <Button
-            className="w-full"
-            onClick={updateProfile}
-          >
-            Yadda saxla
+          <div>
+            <label htmlFor="last_name" className="block text-sm font-medium mb-1">
+              Soyad
+            </label>
+            <Input
+              id="last_name"
+              value={profile.last_name}
+              onChange={(e) => setProfile(prev => ({ ...prev, last_name: e.target.value }))}
+              placeholder="Soyadınız"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium mb-1">
+              Email
+            </label>
+            <Input
+              id="email"
+              type="email"
+              value={user?.email || ""}
+              disabled
+              className="bg-muted"
+            />
+          </div>
+
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Yenilənir...
+              </>
+            ) : (
+              "Yadda saxla"
+            )}
           </Button>
-        </div>
+        </form>
       </div>
     </div>
   );

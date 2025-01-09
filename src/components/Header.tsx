@@ -1,175 +1,49 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Menu, ShoppingCart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetTrigger } from '@/components/ui/sheet';
-import { useCartStore } from '@/store/cart';
-import { useAuthStore } from '@/store/auth';
-import { CartSheet } from './CartSheet';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
-import { MainNav } from './navigation/MainNav';
-import { MobileNav } from './navigation/MobileNav';
-import { UserMenu } from './navigation/UserMenu';
+import { Link } from "react-router-dom";
+import { ShoppingCart, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/auth";
+import { CartSheet } from "./CartSheet"; // Changed to named import
 
-export const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const cartItems = useCartStore((state) => state.items);
-  const { user, signOut } = useAuthStore();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const cartItemsCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) throw sessionError;
-        
-        if (!session?.user) {
-          if (mounted) {
-            setIsAdmin(false);
-            setIsLoading(false);
-          }
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-
-        if (error) throw error;
-        
-        if (mounted) {
-          setIsAdmin(data?.role === 'admin');
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error checking admin status:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to check admin status",
-        });
-        if (mounted) {
-          setIsAdmin(false);
-          setIsLoading(false);
-        }
-      }
-    };
-
-    checkSession();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        if (mounted) {
-          setIsAdmin(false);
-        }
-      } else if (session?.user && mounted) {
-        checkSession();
-      }
-    });
-
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [toast]);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate('/auth');
-      toast({
-        title: "Signed out successfully",
-        description: "You have been signed out of your account",
-      });
-    } catch (error) {
-      console.error('Error signing out:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to sign out",
-      });
-    }
-  };
-
-  const renderLogo = () => (
-    <Link to="/" className="flex items-center space-x-2">
-      <img 
-        src="/lovable-uploads/0e1e6550-b588-485a-bf15-83042085c242.png" 
-        alt="GübrəEvi Logo" 
-        className="h-8 w-8"
-      />
-      <span className="text-2xl font-bold text-primary">GübrəEvi</span>
-    </Link>
-  );
-
-  if (isLoading) {
-    return (
-      <header className="fixed top-0 left-0 right-0 z-50 glass-morphism">
-        <div className="container mx-auto px-4">
-          <div className="flex h-16 items-center justify-between">
-            {renderLogo()}
-          </div>
-        </div>
-      </header>
-    );
-  }
+export default function Header() {
+  const { user } = useAuthStore();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass-morphism">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {renderLogo()}
-          
-          <MainNav isAdmin={isAdmin} />
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 hidden md:flex">
+          <Link to="/" className="mr-6 flex items-center space-x-2">
+            <span className="hidden font-bold sm:inline-block">
+              Gübrə Evi
+            </span>
+          </Link>
+        </div>
 
-          <div className="flex items-center space-x-4">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative"
-                  aria-label="Open cart"
-                >
-                  <ShoppingCart className="h-5 w-5" />
-                  {cartItemsCount > 0 && (
-                    <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-                      {cartItemsCount}
-                    </span>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <CartSheet />
-            </Sheet>
-
-            <UserMenu user={user} onSignOut={handleSignOut} />
-
-            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-              <SheetTrigger asChild className="md:hidden">
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <MobileNav 
-                isOpen={isMenuOpen} 
-                onOpenChange={setIsMenuOpen}
-                isAdmin={isAdmin}
-              />
-            </Sheet>
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          <div className="w-full flex-1 md:w-auto md:flex-none">
+            <input
+              type="text"
+              placeholder="Axtar..."
+              className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            />
           </div>
+          <nav className="flex items-center space-x-2">
+            {user ? (
+              <>
+                <Link to="/profile">
+                  <Button variant="ghost" size="icon" className="relative">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </Link>
+                <CartSheet />
+              </>
+            ) : (
+              <Link to="/auth">
+                <Button variant="ghost">Giriş</Button>
+              </Link>
+            )}
+          </nav>
         </div>
       </div>
     </header>
   );
-};
+}
