@@ -9,113 +9,7 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      basket: {
-        Row: {
-          created_at: string
-          id: number
-          product_id: number | null
-          quantity: number
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          product_id?: number | null
-          quantity?: number
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          product_id?: number | null
-          quantity?: number
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "basket_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      feddback: {
-        Row: {
-          content: string
-          id: number
-        }
-        Insert: {
-          content: string
-          id?: number
-        }
-        Update: {
-          content?: string
-          id?: number
-        }
-        Relationships: []
-      }
-      products: {
-        Row: {
-          category: string
-          description: string
-          id: number
-          image: string
-          name: string
-          price: number
-        }
-        Insert: {
-          category: string
-          description: string
-          id?: number
-          image: string
-          name: string
-          price: number
-        }
-        Update: {
-          category?: string
-          description?: string
-          id?: number
-          image?: string
-          name?: string
-          price?: number
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string
-          feedback: string | null
-          first_name: string | null
-          id: string
-          last_name: string | null
-          role: Database["public"]["Enums"]["user_role"]
-          updated_at: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string
-          feedback?: string | null
-          first_name?: string | null
-          id: string
-          last_name?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
-          updated_at?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string
-          feedback?: string | null
-          first_name?: string | null
-          id?: string
-          last_name?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
@@ -124,7 +18,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      user_role: "admin" | "user"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
