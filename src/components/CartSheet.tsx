@@ -145,7 +145,7 @@ export const CartSheet = () => {
   };
 
   const total = basketItems.reduce(
-    (sum, item) => sum + (item.products?.price || 0) * item.quantity,
+    (sum, item) => sum + item.products.price * item.quantity,
     0
   );
 
