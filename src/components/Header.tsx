@@ -26,13 +26,9 @@ export const Header = () => {
   useEffect(() => {
     let mounted = true;
 
-    const checkSession = async () => {
+    const checkAdminStatus = async () => {
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) throw sessionError;
-        
-        if (!session?.user) {
+        if (!user) {
           if (mounted) {
             setIsAdmin(false);
             setIsLoading(false);
@@ -43,22 +39,24 @@ export const Header = () => {
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', session.user.id)
+          .eq('id', user.id)
           .single();
 
-        if (error) throw error;
-        
+        if (error) {
+          console.error('Error fetching profile:', error);
+          if (mounted) {
+            setIsAdmin(false);
+            setIsLoading(false);
+          }
+          return;
+        }
+
         if (mounted) {
           setIsAdmin(data?.role === 'admin');
           setIsLoading(false);
         }
       } catch (error) {
         console.error('Error checking admin status:', error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to check admin status",
-        });
         if (mounted) {
           setIsAdmin(false);
           setIsLoading(false);
@@ -66,15 +64,16 @@ export const Header = () => {
       }
     };
 
-    checkSession();
+    checkAdminStatus();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT') {
         if (mounted) {
           setIsAdmin(false);
+          setIsLoading(false);
         }
-      } else if (session?.user && mounted) {
-        checkSession();
+      } else if (session?.user) {
+        checkAdminStatus();
       }
     });
 
@@ -82,7 +81,7 @@ export const Header = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, [user]);
 
   const handleSignOut = async () => {
     try {
