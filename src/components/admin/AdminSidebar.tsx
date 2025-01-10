@@ -20,7 +20,7 @@ export const AdminSidebar = () => {
           icon={<LayoutDashboard />} 
           href="/admin" 
           label="Dashboard" 
-          isActive={location.pathname === '/admin'}
+          isActive={location.pathname === '/addproduct'}
         />
         <SidebarLink 
           icon={<PlusCircle />} 
