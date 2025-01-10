@@ -24,9 +24,9 @@ export const AdminSidebar = () => {
         />
         <SidebarLink 
           icon={<PlusCircle />} 
-          href="/addproduct" 
+          href="/admin/add" 
           label="Əlavə et" 
-          isActive={location.pathname === '/admin/add'}
+          isActive={location.pathname === '/addproduct'}
         />
         <SidebarLink 
           icon={<Package />} 
