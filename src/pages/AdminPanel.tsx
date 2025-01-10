@@ -362,7 +362,7 @@ export default function AdminPanel() {
           <Routes>
             <Route path="/" element={<DashboardView />} />
             <Route path="/admin/add" element={<AddProductView />} />
-            <Route path="/admin/products" element={<h1>Products Page</h1>} />
+            <Route path="/admin/products" element={<ProductsView />} />
             <Route path="/admin/users" element={<UserManagement />} />
           </Routes>
         </div>
