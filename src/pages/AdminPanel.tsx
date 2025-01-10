@@ -361,9 +361,9 @@ export default function AdminPanel() {
         <div className="max-w-[1200px] mx-auto">
           <Routes>
             <Route path="/" element={<DashboardView />} />
-            <Route path="/add" element={<AddProductView />} />
-            <Route path="/products" element={<ProductsView />} />
-            <Route path="/users" element={<UserManagement />} />
+            <Route path="/admin/add" element={<AddProductView />} />
+            <Route path="/admin/products" element={<ProductsView />} />
+            <Route path="/admin/users" element={<UserManagement />} />
           </Routes>
         </div>
       </main>
