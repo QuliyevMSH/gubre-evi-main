@@ -169,14 +169,14 @@ export default function AdminPanel() {
         <div>
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <p className="text-gray-500">
-            {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
+            {filteredProducts.length} {filteredProducts.length === 1 ? 'məhsul' : 'məhsul'} tapıldı
           </p>
         </div>
         
         <div className="relative w-[300px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input 
-            placeholder="Search products..." 
+            placeholder="Məhsulları axtar..." 
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -189,10 +189,10 @@ export default function AdminPanel() {
           <table className="w-full">
             <thead>
               <tr className="border-b bg-gray-50">
-                <th className="text-left p-4">Image</th>
-                <th className="text-left p-4">Name</th>
-                <th className="text-left p-4">Category</th>
-                <th className="text-left p-4">Price</th>
+                <th className="text-left p-4">Şəkil</th>
+                <th className="text-left p-4">Ad</th>
+                <th className="text-left p-4">Kateqoriya</th>
+                <th className="text-left p-4">Qiymət</th>
               </tr>
             </thead>
             <tbody>
@@ -299,11 +299,11 @@ export default function AdminPanel() {
           <table className="w-full">
             <thead>
               <tr className="border-b bg-gray-50">
-                <th className="text-left p-4">Image</th>
-                <th className="text-left p-4">Name</th>
-                <th className="text-left p-4">Category</th>
-                <th className="text-left p-4">Price</th>
-                <th className="text-left p-4">Actions</th>
+                <th className="text-left p-4">Şəkil</th>
+                <th className="text-left p-4">Ad</th>
+                <th className="text-left p-4">Kateqoriya</th>
+                <th className="text-left p-4">Qiymət</th>
+                <th className="text-left p-4">Əməliyyatlar</th>
               </tr>
             </thead>
             <tbody>

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   PlusCircle,
@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 
 export const AdminSidebar = () => {
+  const location = useLocation();
+  
   return (
     <div className="fixed left-0 top-0 h-screen w-[240px] bg-blue-600 text-white p-6 flex flex-col">
       <div className="mb-8">
@@ -14,10 +16,30 @@ export const AdminSidebar = () => {
       </div>
       
       <nav className="space-y-2 flex-1">
-        <SidebarLink icon={<LayoutDashboard />} href="/admin" label="Dashboard" />
-        <SidebarLink icon={<PlusCircle />} href="/admin/add" label="Əlavə et" />
-        <SidebarLink icon={<Package />} href="/admin/products" label="Məhsullar" />
-        <SidebarLink icon={<Users />} href="/admin/users" label="İstifadəçilər" />
+        <SidebarLink 
+          icon={<LayoutDashboard />} 
+          href="/admin" 
+          label="Dashboard" 
+          isActive={location.pathname === '/admin'}
+        />
+        <SidebarLink 
+          icon={<PlusCircle />} 
+          href="/admin/add" 
+          label="Əlavə et" 
+          isActive={location.pathname === '/admin/add'}
+        />
+        <SidebarLink 
+          icon={<Package />} 
+          href="/admin/products" 
+          label="Məhsullar" 
+          isActive={location.pathname === '/admin/products'}
+        />
+        <SidebarLink 
+          icon={<Users />} 
+          href="/admin/users" 
+          label="İstifadəçilər" 
+          isActive={location.pathname === '/admin/users'}
+        />
       </nav>
 
       <div className="pt-4 border-t border-white/20 mt-auto">
@@ -31,11 +53,25 @@ export const AdminSidebar = () => {
   );
 };
 
-const SidebarLink = ({ icon, href, label }: { icon: React.ReactNode; href: string; label: string }) => {
+const SidebarLink = ({ 
+  icon, 
+  href, 
+  label, 
+  isActive 
+}: { 
+  icon: React.ReactNode; 
+  href: string; 
+  label: string;
+  isActive: boolean;
+}) => {
   return (
     <Link
       to={href}
-      className="flex items-center gap-3 text-white/80 hover:text-white px-4 py-3 rounded-lg hover:bg-white/10 transition-colors"
+      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+        isActive 
+          ? 'bg-white/20 text-white' 
+          : 'text-white/80 hover:text-white hover:bg-white/10'
+      }`}
     >
       {icon}
       <span>{label}</span>
