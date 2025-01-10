@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Product } from "@/types";
-import { Pencil, Search, Settings, Trash2, User } from "lucide-react";
+import { Pencil, Search, Trash2 } from "lucide-react";
 import { UserManagement } from "@/components/admin/UserManagement";
 import {
   Tabs,
@@ -18,6 +18,8 @@ import {
 
 export default function AdminPanel() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const { toast } = useToast();
   const [newProduct, setNewProduct] = useState({
@@ -32,6 +34,14 @@ export default function AdminPanel() {
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    // Filter products based on search query
+    const filtered = products.filter(product =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredProducts(filtered);
+  }, [searchQuery, products]);
+
   const fetchProducts = async () => {
     try {
       const { data, error } = await supabase
@@ -41,6 +51,7 @@ export default function AdminPanel() {
 
       if (error) throw error;
       setProducts(data || []);
+      setFilteredProducts(data || []);
     } catch (error) {
       console.error("Error fetching products:", error);
       toast({
@@ -166,23 +177,19 @@ export default function AdminPanel() {
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-2xl font-bold">Products Management</h1>
-              <p className="text-gray-500">28 products found</p>
+              <p className="text-gray-500">
+                {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
+              </p>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input 
-                  placeholder="Search products..." 
-                  className="pl-10 w-[300px]"
-                />
-              </div>
-              <Button variant="outline" size="icon">
-                <Settings className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon">
-                <User className="h-4 w-4" />
-              </Button>
+            <div className="relative w-[300px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input 
+                placeholder="Search products..." 
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
           </div>
 
@@ -272,7 +279,7 @@ export default function AdminPanel() {
                         </tr>
                       </thead>
                       <tbody>
-                        {products.map((product) => (
+                        {filteredProducts.map((product) => (
                           <tr key={product.id} className="border-b last:border-0 hover:bg-gray-50">
                             <td className="p-4">
                               <img
