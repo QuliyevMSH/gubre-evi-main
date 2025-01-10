@@ -1,11 +1,9 @@
 import { Link } from "react-router-dom";
 import {
   LayoutDashboard,
-  ShoppingCart,
-  BarChart3,
+  PlusCircle,
   Package,
-  PackageSearch,
-  Tag,
+  Users,
 } from "lucide-react";
 
 export const AdminSidebar = () => {
@@ -17,11 +15,9 @@ export const AdminSidebar = () => {
       
       <nav className="space-y-2 flex-1">
         <SidebarLink icon={<LayoutDashboard />} href="/admin" label="Dashboard" />
-        <SidebarLink icon={<ShoppingCart />} href="/admin/orders" label="Order" />
-        <SidebarLink icon={<BarChart3 />} href="/admin/statistics" label="Statistic" />
-        <SidebarLink icon={<Package />} href="/admin/products" label="Product" />
-        <SidebarLink icon={<PackageSearch />} href="/admin/stock" label="Stock" />
-        <SidebarLink icon={<Tag />} href="/admin/offers" label="Offer" />
+        <SidebarLink icon={<PlusCircle />} href="/admin/add" label="Əlavə et" />
+        <SidebarLink icon={<Package />} href="/admin/products" label="Məhsullar" />
+        <SidebarLink icon={<Users />} href="/admin/users" label="İstifadəçilər" />
       </nav>
 
       <div className="pt-4 border-t border-white/20 mt-auto">
