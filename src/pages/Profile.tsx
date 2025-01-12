@@ -189,11 +189,11 @@ export default function Profile() {
     try {
       if (!user) return;
 
-      // Delete the user's auth account first
-      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
-      if (authError) throw authError;
+      // First sign out the user
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) throw signOutError;
 
-      // Then delete the profile (this should cascade due to foreign key)
+      // Then delete their profile (this is allowed by our RLS policy)
       const { error: profileError } = await supabase
         .from('profiles')
         .delete()
@@ -206,8 +206,6 @@ export default function Profile() {
         description: "Hesabınız uğurla silindi",
       });
 
-      // Sign out after successful deletion
-      await supabase.auth.signOut();
       navigate('/auth');
     } catch (error) {
       console.error('Error deleting account:', error);
@@ -325,4 +323,4 @@ export default function Profile() {
       </div>
     </div>
   );
-}
+};
