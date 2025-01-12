@@ -97,13 +97,6 @@ export default function Profile() {
           last_name: data.last_name || '',
           avatar_url: data.avatar_url,
         });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Xəta baş verdi",
-          description: "Profil tapılmadı",
-        });
-        navigate('/auth');
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
