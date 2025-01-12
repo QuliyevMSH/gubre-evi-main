@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tables } from '@/integrations/supabase/types';
 
-type Profile = Pick<Tables<'profiles'>, 'first_name' | 'last_name' | 'avatar_url'>;
+type Profile = Pick<Tables['profiles'], 'first_name' | 'last_name' | 'avatar_url'>;
 
 export default function Profile() {
   const { user } = useAuthStore();
@@ -189,17 +189,23 @@ export default function Profile() {
     try {
       if (!user) return;
 
-      // First sign out the user
-      const { error: signOutError } = await supabase.auth.signOut();
-      if (signOutError) throw signOutError;
-
-      // Then delete their profile (this is allowed by our RLS policy)
+      // First delete their profile (this is allowed by our RLS policy)
       const { error: profileError } = await supabase
         .from('profiles')
         .delete()
         .eq('id', user.id);
 
       if (profileError) throw profileError;
+
+      // Then delete the user's auth account
+      const { error: deleteError } = await supabase.auth.admin.deleteUser(
+        user.id
+      );
+
+      if (deleteError) {
+        // If we can't delete the auth user, try to sign them out at least
+        await supabase.auth.signOut();
+      }
 
       toast({
         title: "Hesab silindi",
