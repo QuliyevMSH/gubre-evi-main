@@ -196,17 +196,20 @@ export default function Profile() {
     try {
       if (!user) return;
 
-      // First sign out the user to invalidate their session
-      const { error: signOutError } = await supabase.auth.signOut();
-      if (signOutError) throw signOutError;
+      // Call our Edge Function to delete the user
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ user_id: user.id }),
+      });
 
-      // Then delete their profile (this is allowed by our RLS policy)
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', user.id);
-
-      if (profileError) throw profileError;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete account');
+      }
 
       toast({
         title: "Hesab silindi",
