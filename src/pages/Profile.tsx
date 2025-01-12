@@ -196,20 +196,12 @@ export default function Profile() {
     try {
       if (!user) return;
 
-      // Call our Edge Function to delete the user
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ user_id: user.id }),
+      // Call our Edge Function using the Supabase client
+      const { error } = await supabase.functions.invoke('delete-user', {
+        body: { user_id: user.id },
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to delete account');
-      }
+      if (error) throw error;
 
       toast({
         title: "Hesab silindi",
