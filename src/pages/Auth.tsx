@@ -42,19 +42,6 @@ export default function Auth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
-          // Create profile with first and last name after sign up
-          if (event === 'SIGNED_UP') {
-            const { error } = await supabase.from('profiles').upsert({
-              id: session.user.id,
-              first_name: (session.user.user_metadata.first_name as string) || '',
-              last_name: (session.user.user_metadata.last_name as string) || '',
-              created_at: new Date().toISOString(),
-            });
-            
-            if (error) {
-              console.error('Error creating profile:', error);
-            }
-          }
           navigate('/');
         }
         if (event === 'USER_UPDATED') {
@@ -73,68 +60,85 @@ export default function Auth() {
   }, [navigate, user]);
 
   return (
-    <div className="min-h-screen bg-emerald-600 flex items-center justify-center p-4">
-      <div className="grid md:grid-cols-2 gap-8 bg-white rounded-lg p-8 w-full max-w-4xl shadow-xl">
-        <div className="flex flex-col items-center justify-center space-y-4 bg-emerald-50 p-8 rounded-lg">
-          <img 
-            src="/lovable-uploads/0e1e6550-b588-485a-bf15-83042085c242.png" 
-            alt="Logo" 
-            className="w-32 h-32 object-contain"
-          />
-          <p className="text-xl text-emerald-800 font-medium text-center">
+    <div className="min-h-screen bg-[#F2FCE2] flex items-center justify-center p-4">
+      <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-lg">
+        <div className="flex items-center gap-2 mb-6">
+          <img src="/lovable-uploads/c0faf68e-dd54-416c-b19b-8b361ad336a6.png" alt="Logo" className="w-8 h-8" />
+          <h1 className="text-2xl font-semibold text-center">
             Sizi aramızda görməyə sevinirik
-          </p>
-        </div>
-
-        <div className="space-y-6">
-          <h1 className="text-2xl font-semibold text-center text-gray-800">
-            Giriş / Qeydiyyat
           </h1>
-
-          {errorMessage && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          )}
-
-          <SupabaseAuth
-            supabaseClient={supabase}
-            appearance={{
-              theme: ThemeSupa,
-              variables: {
-                default: {
-                  colors: {
-                    brand: '#059669',
-                    brandAccent: '#047857',
-                  }
-                }
-              }
-            }}
-            providers={[]}
-            localization={{
-              variables: {
-                sign_in: {
-                  email_label: 'Email',
-                  password_label: 'Şifrə',
-                  button_label: 'Giriş',
-                  loading_button_label: 'Giriş edilir...',
-                },
-                sign_up: {
-                  email_label: 'Email',
-                  password_label: 'Şifrə',
-                  button_label: 'Qeydiyyat',
-                  loading_button_label: 'Qeydiyyat edilir...',
-                  link_text: 'Hesabınız yoxdur? Qeydiyyatdan keçin',
-                },
-              }
-            }}
-            view="sign_up"
-            additionalData={{
-              first_name: '',
-              last_name: '',
-            }}
-          />
         </div>
+
+        {errorMessage && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        )}
+
+        <SupabaseAuth
+          supabaseClient={supabase}
+          providers={['google']}
+          appearance={{
+            theme: ThemeSupa,
+            variables: {
+              default: {
+                colors: {
+                  brand: '#047857',
+                  brandAccent: '#065f46',
+                  brandButtonText: 'white',
+                  defaultButtonBackground: 'black',
+                  defaultButtonBackgroundHover: '#1f2937',
+                  inputBackground: 'white',
+                  inputBorder: '#e5e7eb',
+                  inputBorderHover: '#d1d5db',
+                  inputBorderFocus: '#047857',
+                },
+                space: {
+                  inputPadding: '12px',
+                  buttonPadding: '12px',
+                },
+              }
+            },
+            style: {
+              button: {
+                width: '100%',
+                marginTop: '8px',
+              },
+              input: {
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+              },
+              message: {
+                color: '#ef4444',
+              },
+              anchor: {
+                color: '#047857',
+                textDecoration: 'none',
+              },
+            },
+          }}
+          localization={{
+            variables: {
+              sign_in: {
+                email_label: 'Email',
+                password_label: 'Şifrə',
+                button_label: 'Giriş',
+                loading_button_label: 'Giriş edilir...',
+                link_text: 'Artıq hesabınız var? Daxil olun',
+                social_provider_text: 'Google ilə davam et',
+              },
+              sign_up: {
+                email_label: 'Email',
+                password_label: 'Şifrə',
+                button_label: 'Qeydiyyat',
+                loading_button_label: 'Qeydiyyat edilir...',
+                link_text: 'Hesabınız yoxdur? Qeydiyyatdan keçin',
+                confirmation_text: 'Təsdiq emaili göndərildi',
+                social_provider_text: 'Google ilə davam et',
+              },
+            }
+          }}
+        />
       </div>
     </div>
   );
