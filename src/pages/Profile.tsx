@@ -189,15 +189,11 @@ export default function Profile() {
     try {
       if (!user) return;
 
-      // Delete user's profile first
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', user.id);
+      // Delete user's auth account
+      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
+      if (authError) throw authError;
 
-      if (profileError) throw profileError;
-
-      // Sign out the user which will effectively delete their session
+      // Sign out the user
       const { error: signOutError } = await supabase.auth.signOut();
       if (signOutError) throw signOutError;
 
