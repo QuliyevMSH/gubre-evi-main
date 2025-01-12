@@ -189,7 +189,7 @@ export default function Profile() {
     try {
       if (!user) return;
 
-      // Delete user's profile first
+      // Delete the user's profile first
       const { error: profileError } = await supabase
         .from('profiles')
         .delete()
@@ -197,19 +197,9 @@ export default function Profile() {
 
       if (profileError) throw profileError;
 
-      // Delete the user's auth account using the regular API
-      const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
-      if (authError) {
-        // If admin deletion fails, try user-initiated deletion
-        const { error: userDeleteError } = await supabase.auth.api.deleteUser(
-          user.id
-        );
-        if (userDeleteError) throw userDeleteError;
-      }
-
-      // Sign out the user
-      const { error: signOutError } = await supabase.auth.signOut();
-      if (signOutError) throw signOutError;
+      // Delete the user's auth account
+      const { error: authError } = await supabase.auth.signOut();
+      if (authError) throw authError;
 
       toast({
         title: "Hesab silindi",
