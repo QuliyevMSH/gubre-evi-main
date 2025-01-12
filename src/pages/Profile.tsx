@@ -98,7 +98,6 @@ export default function Profile() {
           avatar_url: data.avatar_url,
         });
       } else {
-        // Handle case where profile doesn't exist
         toast({
           variant: "destructive",
           title: "Xəta baş verdi",
@@ -197,17 +196,17 @@ export default function Profile() {
     try {
       if (!user) return;
 
-      // First delete their profile (this is allowed by our RLS policy)
+      // First sign out the user to invalidate their session
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) throw signOutError;
+
+      // Then delete their profile (this is allowed by our RLS policy)
       const { error: profileError } = await supabase
         .from('profiles')
         .delete()
         .eq('id', user.id);
 
       if (profileError) throw profileError;
-
-      // Then sign out the user
-      const { error: signOutError } = await supabase.auth.signOut();
-      if (signOutError) throw signOutError;
 
       toast({
         title: "Hesab silindi",
