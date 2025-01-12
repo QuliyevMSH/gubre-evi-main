@@ -22,7 +22,7 @@ import { Tables } from '@/integrations/supabase/types';
 type Profile = Pick<Tables<'profiles'>, 'first_name' | 'last_name' | 'avatar_url'>;
 
 export default function Profile() {
-  const { user } = useAuthStore();
+  const { user, signOut } = useAuthStore();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -203,6 +203,9 @@ export default function Profile() {
 
       if (error) throw error;
 
+      // Sign out immediately after successful deletion
+      await signOut();
+      
       toast({
         title: "Hesab silindi",
         description: "Hesabınız uğurla silindi",
@@ -325,4 +328,4 @@ export default function Profile() {
       </div>
     </div>
   );
-}
+};
