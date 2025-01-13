@@ -1,5 +1,4 @@
-import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
-import { Link as ScrollLink } from 'react-scroll';
+import { Link as RouterLink } from 'react-router-dom';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 interface MobileNavProps {
@@ -9,26 +8,6 @@ interface MobileNavProps {
 }
 
 export const MobileNav = ({ isOpen, onOpenChange, isAdmin }: MobileNavProps) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const isHomePage = location.pathname === '/';
-
-  const handleProductsClick = (e: React.MouseEvent) => {
-    if (!isHomePage) {
-      e.preventDefault();
-      navigate('/', { state: { scrollTo: 'products-section' } });
-    }
-    onOpenChange(false);
-  };
-
-  const handleContactClick = (e: React.MouseEvent) => {
-    if (!isHomePage) {
-      e.preventDefault();
-      navigate('/', { state: { scrollTo: 'footer' } });
-    }
-    onOpenChange(false);
-  };
-
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-[300px] sm:w-[400px]">
@@ -41,25 +20,13 @@ export const MobileNav = ({ isOpen, onOpenChange, isAdmin }: MobileNavProps) => 
             Ana Səhifə
           </RouterLink>
           
-          {isHomePage ? (
-            <ScrollLink
-              to="products-section"
-              smooth={true}
-              duration={500}
-              className="nav-link cursor-pointer"
-              onClick={handleProductsClick}
-            >
-              Məhsullar
-            </ScrollLink>
-          ) : (
-            <RouterLink 
-              to="/" 
-              className="nav-link"
-              onClick={handleProductsClick}
-            >
-              Məhsullar
-            </RouterLink>
-          )}
+          <RouterLink 
+            to="/" 
+            className="nav-link"
+            onClick={() => onOpenChange(false)}
+          >
+            Məhsullar
+          </RouterLink>
           
           <RouterLink
             to="/about"
@@ -69,25 +36,13 @@ export const MobileNav = ({ isOpen, onOpenChange, isAdmin }: MobileNavProps) => 
             Haqqımızda
           </RouterLink>
           
-          {isHomePage ? (
-            <ScrollLink
-              to="footer"
-              smooth={true}
-              duration={500}
-              className="nav-link cursor-pointer"
-              onClick={handleContactClick}
-            >
-              Əlaqə
-            </ScrollLink>
-          ) : (
-            <RouterLink 
-              to="/" 
-              className="nav-link"
-              onClick={handleContactClick}
-            >
-              Əlaqə
-            </RouterLink>
-          )}
+          <RouterLink 
+            to="/contact" 
+            className="nav-link"
+            onClick={() => onOpenChange(false)}
+          >
+            Əlaqə
+          </RouterLink>
           
           {isAdmin && (
             <RouterLink

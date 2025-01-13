@@ -8,6 +8,7 @@ import AdminPanel from './pages/AdminPanel';
 import ProductDetail from './pages/ProductDetail';
 import Profile from './pages/Profile';
 import AboutPage from './pages/About';
+import Contact from './pages/Contact';
 import { Toaster } from './components/ui/toaster';
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
           <Route path="/products/:id" element={<ProductDetail />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<Contact />} />
         </Routes>
       </main>
       <Footer />

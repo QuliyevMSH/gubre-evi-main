@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Mail, MapPin, Phone } from 'lucide-react';
+import { Instagram, Youtube, TikTok, Mail, MapPin, Phone } from 'lucide-react';
 
 interface FooterProps {
   id?: string;
@@ -29,15 +29,15 @@ export const Footer = ({ id }: FooterProps) => {
             <ul className="space-y-3 text-sm">
               <li className="flex items-center space-x-2">
                 <Phone className="h-4 w-4" />
-                <span>+994 50 123 45 67</span>
+                <span>+994 12 525 48 48</span>
               </li>
               <li className="flex items-center space-x-2">
                 <Mail className="h-4 w-4" />
-                <span>info@gubreevi.az</span>
+                <span>info@gubre.az</span>
               </li>
               <li className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4" />
-                <span>Bakı şəh., Nizami küç. 5</span>
+                <span>Bakı şəh., Nərimanov r., Z.Bünyadov Pr.</span>
               </li>
             </ul>
           </div>
@@ -49,7 +49,7 @@ export const Footer = ({ id }: FooterProps) => {
                 <Link to="/" className="hover:text-primary transition-colors">Ana Səhifə</Link>
               </li>
               <li>
-                <Link to="/products" className="hover:text-primary transition-colors">Məhsullar</Link>
+                <Link to="/" className="hover:text-primary transition-colors">Məhsullar</Link>
               </li>
               <li>
                 <Link to="/about" className="hover:text-primary transition-colors">Haqqımızda</Link>
@@ -64,10 +64,13 @@ export const Footer = ({ id }: FooterProps) => {
             <h3 className="font-semibold mb-4">Sosial Media</h3>
             <div className="flex space-x-4">
               <a href="#" className="hover:text-primary transition-colors">
-                <Facebook className="h-5 w-5" />
+                <Instagram className="h-5 w-5" />
               </a>
               <a href="#" className="hover:text-primary transition-colors">
-                <Instagram className="h-5 w-5" />
+                <TikTok className="h-5 w-5" />
+              </a>
+              <a href="#" className="hover:text-primary transition-colors">
+                <Youtube className="h-5 w-5" />
               </a>
             </div>
           </div>
