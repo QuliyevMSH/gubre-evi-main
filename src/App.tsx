@@ -15,7 +15,7 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-grow" style={{ marginTop: '50px' }}>
+      <main className="flex-grow" style={{ marginTop: '60px' }}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
