@@ -1,6 +1,5 @@
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { Link as ScrollLink } from 'react-scroll';
-import { useLocation } from 'react-router-dom';
 
 interface MainNavProps {
   isAdmin: boolean;
@@ -9,7 +8,22 @@ interface MainNavProps {
 
 export const MainNav = ({ isAdmin, className = "" }: MainNavProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isHomePage = location.pathname === '/';
+
+  const handleProductsClick = (e: React.MouseEvent) => {
+    if (!isHomePage) {
+      e.preventDefault();
+      navigate('/', { state: { scrollTo: 'products-section' } });
+    }
+  };
+
+  const handleContactClick = (e: React.MouseEvent) => {
+    if (!isHomePage) {
+      e.preventDefault();
+      navigate('/', { state: { scrollTo: 'footer' } });
+    }
+  };
 
   return (
     <nav className={`hidden md:flex items-center space-x-8 ${className}`}>
@@ -23,11 +37,12 @@ export const MainNav = ({ isAdmin, className = "" }: MainNavProps) => {
           smooth={true}
           duration={500}
           className="nav-link cursor-pointer"
+          onClick={handleProductsClick}
         >
           Məhsullar
         </ScrollLink>
       ) : (
-        <RouterLink to="/products" className="nav-link">
+        <RouterLink to="/" className="nav-link" onClick={handleProductsClick}>
           Məhsullar
         </RouterLink>
       )}
@@ -42,11 +57,12 @@ export const MainNav = ({ isAdmin, className = "" }: MainNavProps) => {
           smooth={true}
           duration={500}
           className="nav-link cursor-pointer"
+          onClick={handleContactClick}
         >
           Əlaqə
         </ScrollLink>
       ) : (
-        <RouterLink to="/contact" className="nav-link">
+        <RouterLink to="/" className="nav-link" onClick={handleContactClick}>
           Əlaqə
         </RouterLink>
       )}
