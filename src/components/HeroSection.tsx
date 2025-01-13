@@ -6,7 +6,7 @@ export const HeroSection = () => {
     <section 
       className="min-h-[80vh] flex flex-col items-center justify-center space-y-8 relative"
       style={{
-        backgroundImage: "url('/lovable-uploads/c0faf68e-dd54-416c-b19b-8b361ad336a6.png')",
+        backgroundImage: "url('https://images.pexels.com/photos/26607014/pexels-photo-26607014/free-photo-of-rural-field-in-countryside.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')",
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat'
