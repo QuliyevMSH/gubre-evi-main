@@ -8,7 +8,7 @@ import ProductDetail from './pages/ProductDetail';
 import Profile from './pages/Profile';
 import AboutPage from './pages/About';
 import { Toaster } from './components/ui/toaster';
-import AdminRoute from './components/AdminRoute';
+import { AdminRoute } from './components/AdminRoute';
 
 function App() {
   return (
