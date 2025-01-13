@@ -125,7 +125,7 @@ export const Header = () => {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass-morphism" style={{ display: 'none' }}>
+    <header className="fixed top-0 left-0 right-0 z-50 glass-morphism">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {renderLogo()}
