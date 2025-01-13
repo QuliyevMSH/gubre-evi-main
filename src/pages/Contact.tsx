@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Youtube, TikTok } from 'lucide-react';
+import { Facebook, Instagram, Youtube, BrandTiktok } from 'lucide-react';
 
 const Contact = () => {
   return (
@@ -51,7 +51,7 @@ const Contact = () => {
                   className="p-2 rounded-full hover:bg-primary/10 transition-colors"
                   aria-label="TikTok"
                 >
-                  <TikTok className="h-6 w-6" />
+                  <BrandTiktok className="h-6 w-6" />
                 </a>
                 <a 
                   href="#" 
