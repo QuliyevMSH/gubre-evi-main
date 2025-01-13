@@ -16,7 +16,7 @@ export const AdminSidebar = () => {
         <SidebarLink
           icon={<LayoutDashboard />}
           href="/admin"
-          label="Dashboard"
+          label="Axtarış"
           isActive={location.pathname === "/admin"}
         />
         <SidebarLink
