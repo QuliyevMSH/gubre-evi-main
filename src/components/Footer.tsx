@@ -1,9 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Mail, MapPin, Phone } from 'lucide-react';
 
-export const Footer = () => {
+interface FooterProps {
+  id?: string;
+}
+
+export const Footer = ({ id }: FooterProps) => {
   return (
-    <footer className="bg-gradient-to-b from-primary/10 to-primary/5 border-t">
+    <footer id={id} className="bg-gradient-to-b from-primary/10 to-primary/5 border-t">
       <div className="container px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">

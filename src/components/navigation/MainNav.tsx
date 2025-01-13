@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
+import { Link as ScrollLink } from 'react-scroll';
+import { useLocation } from 'react-router-dom';
 
 interface MainNavProps {
   isAdmin: boolean;
@@ -6,24 +8,53 @@ interface MainNavProps {
 }
 
 export const MainNav = ({ isAdmin, className = "" }: MainNavProps) => {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
+
   return (
     <nav className={`hidden md:flex items-center space-x-8 ${className}`}>
-      <Link to="/" className="nav-link">
+      <RouterLink to="/" className="nav-link">
         Ana Səhifə
-      </Link>
-      <Link to="/products" className="nav-link">
-        Məhsullar
-      </Link>
-      <Link to="/about" className="nav-link">
+      </RouterLink>
+      
+      {isHomePage ? (
+        <ScrollLink
+          to="products-section"
+          smooth={true}
+          duration={500}
+          className="nav-link cursor-pointer"
+        >
+          Məhsullar
+        </ScrollLink>
+      ) : (
+        <RouterLink to="/products" className="nav-link">
+          Məhsullar
+        </RouterLink>
+      )}
+      
+      <RouterLink to="/about" className="nav-link">
         Haqqımızda
-      </Link>
-      <Link to="/contact" className="nav-link">
-        Əlaqə
-      </Link>
+      </RouterLink>
+      
+      {isHomePage ? (
+        <ScrollLink
+          to="footer"
+          smooth={true}
+          duration={500}
+          className="nav-link cursor-pointer"
+        >
+          Əlaqə
+        </ScrollLink>
+      ) : (
+        <RouterLink to="/contact" className="nav-link">
+          Əlaqə
+        </RouterLink>
+      )}
+      
       {isAdmin && (
-        <Link to="/admin" className="nav-link">
+        <RouterLink to="/admin" className="nav-link">
           Admin Panel
-        </Link>
+        </RouterLink>
       )}
     </nav>
   );
