@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Instagram, Youtube, BrandTiktok, Mail, MapPin, Phone } from 'lucide-react';
+import { Instagram, Youtube, Mail, MapPin, Phone } from 'lucide-react';
 
 interface FooterProps {
   id?: string;
@@ -65,9 +65,6 @@ export const Footer = ({ id }: FooterProps) => {
             <div className="flex space-x-4">
               <a href="#" className="hover:text-primary transition-colors">
                 <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="hover:text-primary transition-colors">
-                <BrandTiktok className="h-5 w-5" />
               </a>
               <a href="#" className="hover:text-primary transition-colors">
                 <Youtube className="h-5 w-5" />

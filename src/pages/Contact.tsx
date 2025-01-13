@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Youtube, BrandTiktok } from 'lucide-react';
+import { Instagram, Youtube, Mail, MapPin, Phone } from 'lucide-react';
 
 const Contact = () => {
   return (
@@ -45,13 +45,6 @@ const Contact = () => {
                   aria-label="Instagram"
                 >
                   <Instagram className="h-6 w-6" />
-                </a>
-                <a 
-                  href="#" 
-                  className="p-2 rounded-full hover:bg-primary/10 transition-colors"
-                  aria-label="TikTok"
-                >
-                  <BrandTiktok className="h-6 w-6" />
                 </a>
                 <a 
                   href="#" 
