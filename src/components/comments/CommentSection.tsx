@@ -151,7 +151,7 @@ export default function CommentSection() {
     }
   };
 
-  const handleLike = async (commentId: number) => {
+  const handleLike = async (commentId: number, isLiked: boolean) => {
     if (!user) {
       toast({
         variant: "destructive",
@@ -162,42 +162,50 @@ export default function CommentSection() {
     }
 
     try {
-      // Ensure profile exists before adding like
+      // Ensure profile exists before adding/removing like
       const profileExists = await ensureProfileExists();
       if (!profileExists) {
         throw new Error("Profile could not be created");
       }
 
-      const { error } = await supabase
-        .from('comment_likes')
-        .insert({
-          comment_id: commentId,
-          user_id: user.id,
-        });
+      if (isLiked) {
+        // Remove like
+        const { error } = await supabase
+          .from('comment_likes')
+          .delete()
+          .eq('comment_id', commentId)
+          .eq('user_id', user.id);
 
-      if (error) {
-        if (error.code === '23505') {
-          toast({
-            variant: "destructive",
-            title: "Xəta",
-            description: "Bu rəyi artıq like etmisiniz",
+        if (error) throw error;
+      } else {
+        // Add like
+        const { error } = await supabase
+          .from('comment_likes')
+          .insert({
+            comment_id: commentId,
+            user_id: user.id,
           });
-          return;
+
+        if (error) {
+          if (error.code === '23505') {
+            toast({
+              variant: "destructive",
+              title: "Xəta",
+              description: "Bu rəyi artıq like etmisiniz",
+            });
+            return;
+          }
+          throw error;
         }
-        throw error;
       }
 
-      toast({
-        title: "Uğurlu",
-        description: "Rəy like edildi",
-      });
       fetchComments();
     } catch (error) {
-      console.error('Error liking comment:', error);
+      console.error('Error handling like:', error);
       toast({
         variant: "destructive",
         title: "Xəta baş verdi",
-        description: "Like əlavə edilmədi",
+        description: "Əməliyyat uğursuz oldu",
       });
     }
   };
@@ -247,8 +255,8 @@ export default function CommentSection() {
                 variant={comment.user_has_liked ? "default" : "outline"}
                 size="sm"
                 className="gap-2"
-                onClick={() => handleLike(comment.id)}
-                disabled={comment.user_has_liked || !user}
+                onClick={() => handleLike(comment.id, comment.user_has_liked)}
+                disabled={!user}
               >
                 <ThumbsUp className="w-4 h-4" />
                 <span>{comment.likes}</span>
