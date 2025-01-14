@@ -42,6 +42,7 @@ export const useProducts = () => {
 
   const handleDeleteProduct = async (id: number) => {
     try {
+      // First, delete all basket entries for this product
       const { error: basketError } = await supabase
         .from("basket")
         .delete()
@@ -49,6 +50,7 @@ export const useProducts = () => {
 
       if (basketError) throw basketError;
 
+      // Then delete the product itself
       const { error: deleteError } = await supabase
         .from("products")
         .delete()
