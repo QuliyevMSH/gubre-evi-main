@@ -41,7 +41,7 @@ export default function CommentSection() {
           *,
           user:profiles(first_name, last_name, avatar_url),
           likes:comment_likes(count),
-          user_has_liked:comment_likes!inner(user_id)
+          user_has_liked:comment_likes(user_id)
         `)
         .eq('product_id', parseInt(id || '0'))
         .is('parent_id', null)
@@ -52,7 +52,7 @@ export default function CommentSection() {
       const formattedComments = commentsData?.map(comment => ({
         ...comment,
         likes: comment.likes?.[0]?.count || 0,
-        user_has_liked: comment.user_has_liked?.length > 0
+        user_has_liked: comment.user_has_liked?.some(like => like.user_id === user?.id) || false
       })) || [];
 
       setComments(formattedComments);
