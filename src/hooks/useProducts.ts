@@ -42,48 +42,30 @@ export const useProducts = () => {
 
   const handleDeleteProduct = async (id: number) => {
     try {
-      // First, check if there are any basket entries for this product
-      const { data: basketEntries, error: basketCheckError } = await supabase
+      // First delete all basket entries for this product
+      const { error: basketError } = await supabase
         .from("basket")
-        .select("id")
+        .delete()
         .eq("product_id", id);
 
-      if (basketCheckError) {
-        console.error("Error checking basket entries:", basketCheckError);
+      if (basketError) {
+        console.error("Error deleting basket entries:", basketError);
         toast({
           variant: "destructive",
           title: "Xəta",
-          description: "Səbət yoxlanılarkən xəta baş verdi",
+          description: "Səbətdən məhsul silinmədi",
         });
         return;
       }
 
-      // If there are basket entries, delete them first
-      if (basketEntries && basketEntries.length > 0) {
-        const { error: basketDeleteError } = await supabase
-          .from("basket")
-          .delete()
-          .eq("product_id", id);
-
-        if (basketDeleteError) {
-          console.error("Error deleting basket entries:", basketDeleteError);
-          toast({
-            variant: "destructive",
-            title: "Xəta",
-            description: "Səbətdən məhsul silinmədi",
-          });
-          return;
-        }
-      }
-
-      // Now we can safely delete the product
-      const { error: productDeleteError } = await supabase
+      // Then delete the product
+      const { error: productError } = await supabase
         .from("products")
         .delete()
         .eq("id", id);
 
-      if (productDeleteError) {
-        console.error("Error deleting product:", productDeleteError);
+      if (productError) {
+        console.error("Error deleting product:", productError);
         toast({
           variant: "destructive",
           title: "Xəta",
@@ -92,13 +74,14 @@ export const useProducts = () => {
         return;
       }
 
+      // Update local state only after successful deletion
+      setProducts(prev => prev.filter(product => product.id !== id));
+      setFilteredProducts(prev => prev.filter(product => product.id !== id));
+      
       toast({
         title: "Uğurlu",
         description: "Məhsul silindi",
       });
-
-      setProducts(prev => prev.filter(product => product.id !== id));
-      setFilteredProducts(prev => prev.filter(product => product.id !== id));
     } catch (error: any) {
       console.error("Error in delete operation:", error);
       toast({
