@@ -42,31 +42,29 @@ export const useProducts = () => {
 
   const handleDeleteProduct = async (id: number) => {
     try {
-      // First, check if there are any basket entries for this product
-      const { data: basketEntries, error: basketCheckError } = await supabase
+      // First, delete all basket entries for this product
+      const { error: basketError } = await supabase
         .from("basket")
-        .select("id")
+        .delete()
         .eq("product_id", id);
 
-      if (basketCheckError) throw basketCheckError;
-
-      // If there are basket entries, delete them first
-      if (basketEntries && basketEntries.length > 0) {
-        const { error: basketDeleteError } = await supabase
-          .from("basket")
-          .delete()
-          .eq("product_id", id);
-
-        if (basketDeleteError) throw basketDeleteError;
+      if (basketError) {
+        console.error("Error deleting basket entries:", basketError);
+        toast({
+          variant: "destructive",
+          title: "Xəta",
+          description: "Səbətdən məhsul silinmədi",
+        });
+        return;
       }
 
-      // Now we can safely delete the product
-      const { error: productDeleteError } = await supabase
+      // Then delete the product itself
+      const { error: deleteError } = await supabase
         .from("products")
         .delete()
         .eq("id", id);
 
-      if (productDeleteError) throw productDeleteError;
+      if (deleteError) throw deleteError;
 
       toast({
         title: "Uğurlu",
