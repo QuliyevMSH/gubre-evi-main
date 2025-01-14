@@ -42,29 +42,55 @@ export const useProducts = () => {
 
   const handleDeleteProduct = async (id: number) => {
     try {
-      // First, delete all basket entries for this product
-      const { error: basketError } = await supabase
+      // First, check if there are any basket entries for this product
+      const { data: basketEntries, error: basketCheckError } = await supabase
         .from("basket")
-        .delete()
+        .select("id")
         .eq("product_id", id);
 
-      if (basketError) {
-        console.error("Error deleting basket entries:", basketError);
+      if (basketCheckError) {
+        console.error("Error checking basket entries:", basketCheckError);
         toast({
           variant: "destructive",
           title: "Xəta",
-          description: "Səbətdən məhsul silinmədi",
+          description: "Səbət yoxlanılarkən xəta baş verdi",
         });
         return;
       }
 
-      // Then delete the product itself
-      const { error: deleteError } = await supabase
+      // If there are basket entries, delete them first
+      if (basketEntries && basketEntries.length > 0) {
+        const { error: basketDeleteError } = await supabase
+          .from("basket")
+          .delete()
+          .eq("product_id", id);
+
+        if (basketDeleteError) {
+          console.error("Error deleting basket entries:", basketDeleteError);
+          toast({
+            variant: "destructive",
+            title: "Xəta",
+            description: "Səbətdən məhsul silinmədi",
+          });
+          return;
+        }
+      }
+
+      // Now we can safely delete the product
+      const { error: productDeleteError } = await supabase
         .from("products")
         .delete()
         .eq("id", id);
 
-      if (deleteError) throw deleteError;
+      if (productDeleteError) {
+        console.error("Error deleting product:", productDeleteError);
+        toast({
+          variant: "destructive",
+          title: "Xəta",
+          description: "Məhsul silinmədi",
+        });
+        return;
+      }
 
       toast({
         title: "Uğurlu",
