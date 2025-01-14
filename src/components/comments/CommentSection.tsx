@@ -78,9 +78,9 @@ export default function CommentSection() {
       .from('profiles')
       .select('id')
       .eq('id', user.id)
-      .single();
+      .maybeSingle(); // Changed from single() to maybeSingle()
 
-    if (profileError || !profile) {
+    if (!profile) {
       // Create profile if it doesn't exist
       const { error: insertError } = await supabase
         .from('profiles')
