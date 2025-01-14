@@ -42,30 +42,13 @@ export const useProducts = () => {
 
   const handleDeleteProduct = async (id: number) => {
     try {
-      // First delete all basket entries for this product
-      const { error: basketError } = await supabase
-        .from("basket")
-        .delete()
-        .eq("product_id", id);
+      // Use a single query to delete the product, which will automatically handle basket entries
+      const { error } = await supabase.rpc('delete_product_with_baskets', {
+        product_id: id
+      });
 
-      if (basketError) {
-        console.error("Error deleting basket entries:", basketError);
-        toast({
-          variant: "destructive",
-          title: "Xəta",
-          description: "Səbətdən məhsul silinmədi",
-        });
-        return;
-      }
-
-      // Then delete the product
-      const { error: productError } = await supabase
-        .from("products")
-        .delete()
-        .eq("id", id);
-
-      if (productError) {
-        console.error("Error deleting product:", productError);
+      if (error) {
+        console.error("Error deleting product:", error);
         toast({
           variant: "destructive",
           title: "Xəta",
