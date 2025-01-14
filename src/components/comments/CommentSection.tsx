@@ -41,7 +41,7 @@ export default function CommentSection() {
           *,
           user:profiles(first_name, last_name, avatar_url),
           likes:comment_likes(count),
-          user_has_liked:comment_likes(user_id)
+          user_has_liked:comment_likes!left(user_id)
         `)
         .eq('product_id', parseInt(id || '0'))
         .is('parent_id', null)
@@ -70,6 +70,31 @@ export default function CommentSection() {
     fetchComments();
   }, [id]);
 
+  const ensureProfileExists = async () => {
+    if (!user) return false;
+
+    // Check if profile exists
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile) {
+      // Create profile if it doesn't exist
+      const { error: insertError } = await supabase
+        .from('profiles')
+        .insert({ id: user.id });
+
+      if (insertError) {
+        console.error('Error creating profile:', insertError);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
@@ -92,6 +117,12 @@ export default function CommentSection() {
 
     setLoading(true);
     try {
+      // Ensure profile exists before adding comment
+      const profileExists = await ensureProfileExists();
+      if (!profileExists) {
+        throw new Error("Profile could not be created");
+      }
+
       const { error } = await supabase
         .from('comments')
         .insert({
@@ -131,6 +162,12 @@ export default function CommentSection() {
     }
 
     try {
+      // Ensure profile exists before adding like
+      const profileExists = await ensureProfileExists();
+      if (!profileExists) {
+        throw new Error("Profile could not be created");
+      }
+
       const { error } = await supabase
         .from('comment_likes')
         .insert({
