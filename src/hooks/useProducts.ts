@@ -42,10 +42,10 @@ export const useProducts = () => {
 
   const handleDeleteProduct = async (id: number) => {
     try {
-      // Use a single query to delete the product, which will automatically handle basket entries
-      const { error } = await supabase.rpc('delete_product_with_baskets', {
-        product_id: id
-      });
+      const { error } = await supabase
+        .rpc('delete_product_with_baskets', {
+          product_id: id
+        });
 
       if (error) {
         console.error("Error deleting product:", error);
