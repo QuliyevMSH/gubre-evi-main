@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
+import { ThumbsUp } from 'lucide-react';
 
 interface Comment {
   id: number;
@@ -20,6 +21,8 @@ interface Comment {
     last_name: string | null;
     avatar_url: string | null;
   } | null;
+  likes: number;
+  user_has_liked: boolean;
 }
 
 export default function CommentSection() {
@@ -32,18 +35,27 @@ export default function CommentSection() {
 
   const fetchComments = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
         .select(`
           *,
-          user:profiles(first_name, last_name, avatar_url)
+          user:profiles(first_name, last_name, avatar_url),
+          likes:comment_likes(count),
+          user_has_liked:comment_likes!inner(user_id)
         `)
         .eq('product_id', parseInt(id || '0'))
         .is('parent_id', null)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setComments(data || []);
+      if (commentsError) throw commentsError;
+
+      const formattedComments = commentsData?.map(comment => ({
+        ...comment,
+        likes: comment.likes?.[0]?.count || 0,
+        user_has_liked: comment.user_has_liked?.length > 0
+      })) || [];
+
+      setComments(formattedComments);
     } catch (error) {
       console.error('Error fetching comments:', error);
       toast({
@@ -108,6 +120,51 @@ export default function CommentSection() {
     }
   };
 
+  const handleLike = async (commentId: number) => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Xəta",
+        description: "Like etmək üçün daxil olmalısınız",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('comment_likes')
+        .insert({
+          comment_id: commentId,
+          user_id: user.id,
+        });
+
+      if (error) {
+        if (error.code === '23505') {
+          toast({
+            variant: "destructive",
+            title: "Xəta",
+            description: "Bu rəyi artıq like etmisiniz",
+          });
+          return;
+        }
+        throw error;
+      }
+
+      toast({
+        title: "Uğurlu",
+        description: "Rəy like edildi",
+      });
+      fetchComments();
+    } catch (error) {
+      console.error('Error liking comment:', error);
+      toast({
+        variant: "destructive",
+        title: "Xəta baş verdi",
+        description: "Like əlavə edilmədi",
+      });
+    }
+  };
+
   return (
     <div className="py-8">
       <h2 className="text-2xl font-bold mb-6">Rəylər</h2>
@@ -147,7 +204,19 @@ export default function CommentSection() {
                 </p>
               </div>
             </div>
-            <p className="text-gray-700">{comment.content}</p>
+            <p className="text-gray-700 mb-3">{comment.content}</p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={comment.user_has_liked ? "default" : "outline"}
+                size="sm"
+                className="gap-2"
+                onClick={() => handleLike(comment.id)}
+                disabled={comment.user_has_liked || !user}
+              >
+                <ThumbsUp className="w-4 h-4" />
+                <span>{comment.likes}</span>
+              </Button>
+            </div>
           </div>
         ))}
       </div>
