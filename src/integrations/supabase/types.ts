@@ -119,6 +119,39 @@ export type Database = {
           },
         ]
       }
+      orders: {
+        Row: {
+          created_at: string
+          email: string
+          id: number
+          phone: string
+          shipping_address: string
+          status: string
+          total_amount: number
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: number
+          phone: string
+          shipping_address: string
+          status?: string
+          total_amount: number
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: number
+          phone?: string
+          shipping_address?: string
+          status?: string
+          total_amount?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string
